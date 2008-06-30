@@ -7,6 +7,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
+import org.marketcetera.core.ClassVersion;
 
 import static org.junit.Assert.*;
 
@@ -20,6 +21,7 @@ import static org.junit.Assert.*;
 
 /* $License$ */
 
+@ClassVersion("$Id")
 public class TestCaseBase
 {
 

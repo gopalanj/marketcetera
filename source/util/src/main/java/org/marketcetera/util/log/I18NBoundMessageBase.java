@@ -1,7 +1,7 @@
 package org.marketcetera.util.log;
 
 import java.util.Locale;
-import org.marketcetera.util.misc.ClassVersion;
+import org.marketcetera.core.ClassVersion;
 
 /**
  * A bound message implementation, representing the combination of an

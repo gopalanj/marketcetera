@@ -28,8 +28,8 @@
 
     <!-- Compile. -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring</artifactId>
+      <groupId>${public.package}</groupId>
+      <artifactId>core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -50,10 +50,6 @@
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-i18n</groupId>
-      <artifactId>commons-i18n</artifactId>
     </dependency>
 
     <!-- Testing. -->

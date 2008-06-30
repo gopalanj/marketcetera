@@ -7,7 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import org.marketcetera.util.misc.ClassVersion;
+import org.marketcetera.core.ClassVersion;
 
 import static org.marketcetera.util.file.SpecialNames.*;
 

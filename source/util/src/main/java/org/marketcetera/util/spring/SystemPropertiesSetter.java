@@ -1,7 +1,7 @@
 package org.marketcetera.util.spring;
 
 import java.util.Map;
-import org.marketcetera.util.misc.ClassVersion;
+import org.marketcetera.core.ClassVersion;
 
 /**
  * Sets system properties from a map. Its intended usage is to enable

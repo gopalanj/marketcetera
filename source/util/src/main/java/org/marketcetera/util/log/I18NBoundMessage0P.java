@@ -1,6 +1,6 @@
 package org.marketcetera.util.log;
 
-import org.marketcetera.util.misc.ClassVersion;
+import org.marketcetera.core.ClassVersion;
 
 /**
  * A bound message, representing a {@link I18NMessage0P}.

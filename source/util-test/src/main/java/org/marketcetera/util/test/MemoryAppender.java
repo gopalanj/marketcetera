@@ -3,6 +3,7 @@ package org.marketcetera.util.test;
 import java.util.LinkedList;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
+import org.marketcetera.core.ClassVersion;
 
 /**
  * Retains logging events to a memory list, for use by tests that need
@@ -15,6 +16,7 @@ import org.apache.log4j.spi.LoggingEvent;
 
 /* $License$ */
 
+@ClassVersion("$Id")
 public class MemoryAppender
     extends AppenderSkeleton
 {
