@@ -44,11 +44,7 @@ public class ORSStartupTest extends TestCase {
                 }
             }
         })).start();
-        //Wait for ORS to start.
-        while(OrderRoutingSystem.getInstance() == null ||
-                (!OrderRoutingSystem.getInstance().isWaitingForever())) {
-            Thread.sleep(10000);
-        }
+        Thread.sleep(10000);
 
         assertFalse("failure in ORS startup: " + failureEx, failed);
 
