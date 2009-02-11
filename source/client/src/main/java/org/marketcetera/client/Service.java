@@ -3,10 +3,9 @@ package org.marketcetera.client;
 import java.math.BigDecimal;
 import java.util.Date;
 import javax.jws.WebService;
-import javax.jws.WebParam;
 
 import org.marketcetera.client.brokers.BrokersStatus;
-import org.marketcetera.trade.MSymbol;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.trade.ReportBaseImpl;
 import org.marketcetera.util.misc.ClassVersion;
 import org.marketcetera.util.ws.stateful.ClientContext;
@@ -23,7 +22,7 @@ import org.marketcetera.util.ws.wrappers.RemoteException;
 
 /* $License$ */
 
-@WebService(targetNamespace = "http://marketcetera.org/services")
+@WebService
 @ClassVersion("$Id$")
 public interface Service
     extends ServiceBase
@@ -39,8 +38,9 @@ public interface Service
      * @throws RemoteException Thrown if the operation cannot be
      * completed.
      */
+
     BrokersStatus getBrokersStatus
-        (@WebParam(name= "context") ClientContext context)
+        (ClientContext context)
         throws RemoteException;
 
     /**
@@ -57,8 +57,8 @@ public interface Service
      */
 
     ReportBaseImpl[] getReportsSince
-        (@WebParam(name= "context")ClientContext context,
-         @WebParam(name= "date")Date date)
+        (ClientContext context,
+         Date date)
         throws RemoteException;
 
     /**
@@ -75,9 +75,9 @@ public interface Service
      */
 
     BigDecimal getPositionAsOf
-        (@WebParam(name= "context")ClientContext context,
-         @WebParam(name= "date")Date date,
-         @WebParam(name= "symbol")MSymbol symbol)
+        (ClientContext context,
+         Date date,
+         MSymbol symbol)
         throws RemoteException;
 
     /**
@@ -93,6 +93,6 @@ public interface Service
      */
 
     String getNextOrderID
-        (@WebParam(name= "context")ClientContext context)
+        (ClientContext context)
         throws RemoteException;
 }

@@ -1,6 +1,7 @@
 package org.marketcetera.trade;
 
 import org.marketcetera.util.misc.ClassVersion;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.quickfix.*;
 import org.marketcetera.module.ExpectedFailure;
 import org.junit.Test;

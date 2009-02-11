@@ -15,7 +15,6 @@ import org.marketcetera.core.ClassVersion;
 public abstract class SymbolExchangeEvent
     extends EventBase
 {
-    private static final long serialVersionUID = 1L;
     /**
      * the symbol for this event
      */

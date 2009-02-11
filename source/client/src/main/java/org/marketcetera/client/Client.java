@@ -2,6 +2,7 @@ package org.marketcetera.client;
 
 import org.marketcetera.util.misc.ClassVersion;
 import org.marketcetera.trade.*;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.client.brokers.BrokersStatus;
 
 import java.util.Date;

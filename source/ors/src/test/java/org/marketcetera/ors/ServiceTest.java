@@ -6,7 +6,8 @@ import java.util.List;
 import org.junit.Test;
 import org.marketcetera.client.Service;
 import org.marketcetera.client.brokers.BrokerStatus;
-import org.marketcetera.trade.MSymbol;
+import org.marketcetera.core.MSymbol;
+import org.marketcetera.symbology.SymbolScheme;
 import org.marketcetera.trade.ReportBaseImpl;
 import org.marketcetera.trade.SecurityType;
 
@@ -24,7 +25,7 @@ public class ServiceTest
     extends ORSTestBase
 {
     private static final MSymbol TEST_SYMBOL=new MSymbol
-        ("IBM",SecurityType.CommonStock);
+        ("IBM",SymbolScheme.ISIN,SecurityType.CommonStock);
 
     @Test
     public void startStopORS()

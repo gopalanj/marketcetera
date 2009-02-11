@@ -5,7 +5,7 @@ import java.text.ParseException;
 
 import junit.framework.TestCase;
 
-import org.marketcetera.trade.MSymbol;
+import org.marketcetera.core.MSymbol;
 
 import quickfix.FieldNotFound;
 import quickfix.field.MaturityMonthYear;

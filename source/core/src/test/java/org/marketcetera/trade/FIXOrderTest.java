@@ -3,6 +3,7 @@ package org.marketcetera.trade;
 import org.marketcetera.util.misc.ClassVersion;
 import org.marketcetera.quickfix.FIXVersion;
 import org.marketcetera.core.FIXVersionTestSuite;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.module.ExpectedFailure;
 import org.junit.Test;
 import static org.junit.Assert.assertSame;

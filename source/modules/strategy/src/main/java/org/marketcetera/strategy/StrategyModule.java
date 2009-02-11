@@ -15,10 +15,8 @@ import static org.marketcetera.strategy.Messages.INVALID_CEP_REQUEST;
 import static org.marketcetera.strategy.Messages.INVALID_COMBINED_DATA_REQUEST;
 import static org.marketcetera.strategy.Messages.INVALID_EVENT;
 import static org.marketcetera.strategy.Messages.INVALID_LANGUAGE_ERROR;
-import static org.marketcetera.strategy.Messages.INVALID_LOG;
 import static org.marketcetera.strategy.Messages.INVALID_MARKET_DATA_REQUEST;
 import static org.marketcetera.strategy.Messages.INVALID_MESSAGE;
-import static org.marketcetera.strategy.Messages.INVALID_NOTIFICATION;
 import static org.marketcetera.strategy.Messages.INVALID_ORDER;
 import static org.marketcetera.strategy.Messages.INVALID_TRADE_SUGGESTION;
 import static org.marketcetera.strategy.Messages.MARKET_DATA_REQUEST_FAILED;
@@ -59,13 +57,11 @@ import org.marketcetera.client.ClientModuleFactory;
 import org.marketcetera.client.ConnectionException;
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.core.ClassVersion;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.core.Util;
-import org.marketcetera.core.notifications.Notification;
 import org.marketcetera.core.publisher.ISubscriber;
 import org.marketcetera.core.publisher.PublisherEngine;
 import org.marketcetera.event.EventBase;
-import org.marketcetera.event.LogEvent;
-import org.marketcetera.event.LogEvent.Level;
 import org.marketcetera.marketdata.MarketDataRequest;
 import org.marketcetera.module.DataEmitter;
 import org.marketcetera.module.DataEmitterSupport;
@@ -87,7 +83,6 @@ import org.marketcetera.module.UnsupportedRequestParameterType;
 import org.marketcetera.trade.BrokerID;
 import org.marketcetera.trade.FIXOrder;
 import org.marketcetera.trade.Factory;
-import org.marketcetera.trade.MSymbol;
 import org.marketcetera.trade.OrderCancel;
 import org.marketcetera.trade.OrderReplace;
 import org.marketcetera.trade.OrderSingle;
@@ -210,11 +205,10 @@ final class StrategyModule
         if(inRequest == null ||
            inSource == null ||
            inSource.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_MARKET_DATA_REQUEST,
-                                             String.valueOf(strategy),
+            INVALID_MARKET_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                             strategy,
                                              inRequest,
-                                             inSource),
-                               strategy);
+                                             inSource);
             return 0;
         }
         int requestID = counter.incrementAndGet();
@@ -228,11 +222,10 @@ final class StrategyModule
                                        dataFlowID);
             }
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(MARKET_DATA_REQUEST_FAILED,
-                                             e,
-                                             inRequest,
-                                             inSource),
-                               strategy);
+            MARKET_DATA_REQUEST_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                            e,
+                                            inRequest,
+                                            inSource);
             return 0;
         }
         return requestID;
@@ -256,14 +249,13 @@ final class StrategyModule
            inCEPSource.isEmpty() ||
            inNamespace == null ||
            inNamespace.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_COMBINED_DATA_REQUEST,
-                                             String.valueOf(strategy),
-                                             inRequest,
-                                             inMarketDataSource,
-                                             Arrays.toString(inStatements),
-                                             inCEPSource,
-                                             inNamespace),
-                               strategy);
+            INVALID_COMBINED_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                               strategy,
+                                               inRequest,
+                                               inMarketDataSource,
+                                               Arrays.toString(inStatements),
+                                               inCEPSource,
+                                               inNamespace);
             return 0;
         }
         int requestID = counter.incrementAndGet();
@@ -284,14 +276,13 @@ final class StrategyModule
             }
             return requestID;
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(COMBINED_DATA_REQUEST_FAILED,
-                                             e,
-                                             inRequest,
-                                             inMarketDataSource,
-                                             Arrays.toString(inStatements),
-                                             inCEPSource,
-                                             inNamespace),
-                               strategy);
+            COMBINED_DATA_REQUEST_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                              e,
+                                              inRequest,
+                                              inMarketDataSource,
+                                              Arrays.toString(inStatements),
+                                              inCEPSource,
+                                              inNamespace);
             return 0;
         }        
     }
@@ -308,11 +299,10 @@ final class StrategyModule
                 try {
                     cancelDataRequest(request);
                 } catch (Exception e) {
-                    StrategyModule.log(LogEvent.warn(UNABLE_TO_CANCEL_DATA_REQUEST,
-                                                     e,
-                                                     String.valueOf(strategy),
-                                                     request),
-                                       strategy);
+                    UNABLE_TO_CANCEL_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                                       e,
+                                                       strategy,
+                                                       request);
                 }
             }
         }
@@ -325,20 +315,18 @@ final class StrategyModule
     {
         synchronized(dataRequests) {
             if(!dataRequests.containsKey(inDataRequestID)) {
-                StrategyModule.log(LogEvent.warn(NO_DATA_HANDLE,
-                                                 String.valueOf(strategy),
-                                                 inDataRequestID),
-                                   strategy);
+                NO_DATA_HANDLE.warn(Strategy.STRATEGY_MESSAGES,
+                                    strategy,
+                                    inDataRequestID);
                 return;
             }
             try {
                 doCancelDataRequest(inDataRequestID);
             } catch (Exception e) {
-                StrategyModule.log(LogEvent.warn(UNABLE_TO_CANCEL_DATA_REQUEST,
-                                                 e,
-                                                 String.valueOf(strategy),
-                                                 inDataRequestID),
-                                   strategy);
+                UNABLE_TO_CANCEL_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                                   e,
+                                                   strategy,
+                                                   inDataRequestID);
             }
         }
     }
@@ -352,12 +340,10 @@ final class StrategyModule
     {
         if(inStatements == null ||
            inStatements.length == 0) {
-            StrategyModule.log(LogEvent.warn(INVALID_CEP_REQUEST,
-                                             String.valueOf(strategy),
-                                             Arrays.toString(inStatements),
-                                             String.valueOf(inSource),
-                                             String.valueOf(inNamespace)),
-                               strategy);
+            INVALID_CEP_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                     strategy,
+                                     Arrays.toString(inStatements),
+                                     String.valueOf(inSource) + ":" + String.valueOf(inNamespace)); //$NON-NLS-1$
             return 0;
         }
         int requestID = counter.incrementAndGet();
@@ -373,11 +359,10 @@ final class StrategyModule
                                                                 false));
             }
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(CEP_REQUEST_FAILED,
-                                             e,
-                                             Arrays.toString(inStatements),
-                                             inSource),
-                               strategy);
+            CEP_REQUEST_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                    e,
+                                    Arrays.toString(inStatements),
+                                    inSource);
             return 0;
         }
         return requestID;
@@ -386,19 +371,19 @@ final class StrategyModule
      * @see org.marketcetera.strategy.StrategyMXBean#setOrdersDestination(java.lang.String)
      */
     @Override
-    public void setOutputDestination(String inDestination)
+    public void setOrdersDestination(String inDestination)
     {
         if(inDestination == null ||
            inDestination.isEmpty()) {
-            outputDestination = null;
+            ordersDestination = null;
             SLF4JLoggerProxy.debug(StrategyModule.class,
-                                   "Setting output destination to null"); //$NON-NLS-1$
+                                   "Setting orders destination to null"); //$NON-NLS-1$
             return;
         }
-        outputDestination = new ModuleURN(inDestination);
+        ordersDestination = new ModuleURN(inDestination);
         SLF4JLoggerProxy.debug(StrategyModule.class,
-                               "Setting output destination to {}", //$NON-NLS-1$
-                               outputDestination);
+                               "Setting orders destination to {}", //$NON-NLS-1$
+                               ordersDestination);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.StrategyMXBean#setParameters(java.lang.String)
@@ -422,47 +407,33 @@ final class StrategyModule
                                parameters);
     }
     /* (non-Javadoc)
+     * @see org.marketcetera.strategy.StrategyMXBean#setSuggestionsDestination(java.lang.String)
+     */
+    @Override
+    public void setSuggestionsDestination(String inDestination)
+    {
+        if(inDestination == null ||
+           inDestination.isEmpty()) {
+            suggestionsDestination = null;
+            SLF4JLoggerProxy.debug(StrategyModule.class,
+                                   "Setting suggestions destination to null"); //$NON-NLS-1$
+            return;
+        }
+        suggestionsDestination = new ModuleURN(inDestination);
+        SLF4JLoggerProxy.debug(StrategyModule.class,
+                               "Setting suggestions destination to {}", //$NON-NLS-1$
+                               suggestionsDestination);
+    }
+    /* (non-Javadoc)
      * @see org.marketcetera.strategy.StrategyMXBean#getOrdersDestination()
      */
     @Override
-    public String getOutputDestination()
+    public String getOrdersDestination()
     {
-        if(outputDestination == null) {
+        if(ordersDestination == null) {
             return null;
         }
-        return outputDestination.getValue();
-    }
-    /* (non-Javadoc)
-     * @see org.marketcetera.strategy.StrategyMXBean#isRoutingOrdersToORS()
-     */
-    @Override
-    public boolean isRoutingOrdersToORS()
-    {
-        synchronized(this) {
-            return routeOrdersToORS;
-        }
-    }
-    /* (non-Javadoc)
-     * @see org.marketcetera.strategy.StrategyMXBean#setIsRountingOrdersToORS(boolean)
-     */
-    @Override
-    public void setIsRountingOrdersToORS(boolean inValue)
-    {
-        try {
-            if(routeOrdersToORS != inValue) {
-                if(getState().isStarted()) {
-                    if(inValue) {
-                        establishORSRouting();
-                    } else {
-                        disconnectORSRouting();
-                    }
-                }
-            }
-            // change the value only if the above call succeeded
-            routeOrdersToORS = inValue;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return ordersDestination.getValue();
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.StrategyMXBean#getParameters()
@@ -476,6 +447,17 @@ final class StrategyModule
         return Util.propertiesToString(parameters);
     }
     /* (non-Javadoc)
+     * @see org.marketcetera.strategy.StrategyMXBean#getSuggestionsDestination()
+     */
+    @Override
+    public String getSuggestionsDestination()
+    {
+        if(suggestionsDestination == null) {
+            return null;
+        }
+        return suggestionsDestination.getValue();
+    }
+    /* (non-Javadoc)
      * @see org.marketcetera.strategy.OutboundServicesProvider#setMessage(quickfix.Message)
      */
     @Override
@@ -484,21 +466,19 @@ final class StrategyModule
     {
         if(inMessage == null ||
            inBroker == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_MESSAGE,
-                                             String.valueOf(strategy)),
-                               strategy);
+            INVALID_MESSAGE.warn(Strategy.STRATEGY_MESSAGES,
+                                 strategy);
             return;
         }
         try {
             publish(Factory.getInstance().createOrder(inMessage,
                                                       inBroker));
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(SEND_MESSAGE_FAILED,
-                                             e,
-                                             String.valueOf(strategy),
-                                             inMessage,
-                                             inBroker),
-                               strategy);
+            SEND_MESSAGE_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                     e,
+                                     strategy,
+                                     inMessage,
+                                     inBroker);
         }
     }
     /* (non-Javadoc)
@@ -508,8 +488,7 @@ final class StrategyModule
     public void sendOrder(OrderSingle inOrder)
     {
         if(inOrder == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_ORDER,
-                                             String.valueOf(strategy)),
+            INVALID_ORDER.warn(Strategy.STRATEGY_MESSAGES,
                                strategy);
             return;
         }
@@ -522,9 +501,8 @@ final class StrategyModule
     public void sendSuggestion(Suggestion inSuggestion)
     {
         if(inSuggestion == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_TRADE_SUGGESTION,
-                                             String.valueOf(strategy)),
-                               strategy);
+            INVALID_TRADE_SUGGESTION.warn(Strategy.STRATEGY_MESSAGES,
+                                          strategy);
             return;
         }
         publish(inSuggestion);
@@ -539,8 +517,7 @@ final class StrategyModule
     {
         // event must not be null, but the other two parameters may be
         if(inEvent == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_EVENT,
-                                             String.valueOf(strategy)),
+            INVALID_EVENT.warn(Strategy.STRATEGY_MESSAGES,
                                strategy);
             return;
         }
@@ -558,46 +535,16 @@ final class StrategyModule
             } catch (Exception e) {
                 // warn that the event was not sent to CEP, but continue to send to subscribers
                 // this may not be an error as the CEP module may not exist
-                StrategyModule.log(LogEvent.warn(CANNOT_SEND_EVENT_TO_CEP,
-                                                 String.valueOf(strategy),
-                                                 inEvent,
-                                                 cepModuleURN),
-                                   strategy);
+                CANNOT_SEND_EVENT_TO_CEP.warn(Strategy.STRATEGY_MESSAGES,
+                                              e,
+                                              strategy,
+                                              inEvent,
+                                              cepModuleURN);
             }
             // done sending event to CEP, for better or worse
         }
         // send to subscribers
         publish(inEvent);
-    }
-    /* (non-Javadoc)
-     * @see org.marketcetera.strategy.OutboundServicesProvider#setNotification(org.marketcetera.core.notifications.Notification)
-     */
-    @Override
-    public void sendNotification(Notification inNotification)
-    {
-        if(inNotification == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_NOTIFICATION,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        publish(inNotification);
-    }
-    /* (non-Javadoc)
-     * @see org.marketcetera.strategy.OutboundServicesProvider#log(java.lang.String)
-     */
-    @Override
-    public void log(LogEvent inEvent)
-    {
-        if(inEvent == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_LOG,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        if(shouldLog(inEvent)) {
-            publish(inEvent);
-        }
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.InboundServicesProvider#getBrokers()
@@ -610,7 +557,7 @@ final class StrategyModule
         return orsClient.getBrokersStatus().getBrokers();
     }
     /* (non-Javadoc)
-     * @see org.marketcetera.strategy.InboundServicesProvider#getPositionAsOf(java.util.Date, org.marketcetera.trade.MSymbol)
+     * @see org.marketcetera.strategy.InboundServicesProvider#getPositionAsOf(java.util.Date, org.marketcetera.core.MSymbol)
      */
     @Override
     public BigDecimal getPositionAsOf(Date inDate,
@@ -709,89 +656,6 @@ final class StrategyModule
         return output.toString();
     }
     /**
-     * Logs the given event. 
-     *
-     * @param inMessage a <code>LogEvent</code> value
-     * @param inStrategy a <code>Strategy</code> value
-     */
-    static void log(LogEvent inEvent,
-                    Strategy inStrategy)
-    {
-        if(shouldLog(inEvent)) {
-            doLogger(inEvent);
-            inStrategy.getOutboundServicesProvider().log(inEvent);
-        }
-    }
-    /**
-     * Determines if the given event should be emitted or not.
-     *
-     * @param inEvent a <code>LogEvent</code> value
-     * @return a <code>boolean</code> value
-     */
-    private static boolean shouldLog(LogEvent inEvent)
-    {
-        if(Level.DEBUG.equals(inEvent.getLevel())) {
-            return SLF4JLoggerProxy.isDebugEnabled(Strategy.STRATEGY_MESSAGES);
-        }
-        if(Level.INFO.equals(inEvent.getLevel())) {
-            return SLF4JLoggerProxy.isInfoEnabled(Strategy.STRATEGY_MESSAGES);
-        }
-        if(Level.WARN.equals(inEvent.getLevel())) {
-            return SLF4JLoggerProxy.isWarnEnabled(Strategy.STRATEGY_MESSAGES);
-        }
-        if(Level.ERROR.equals(inEvent.getLevel())) {
-            return SLF4JLoggerProxy.isErrorEnabled(Strategy.STRATEGY_MESSAGES);
-        }
-        return false;
-    }
-    /**
-     * Logs the given message to the standard log.
-     *
-     * @param inEvent a <code>LogEvent</code> value
-     */
-    private static void doLogger(LogEvent inEvent)
-    {
-        Throwable exception = inEvent.getException();
-        String message = inEvent.getMessage();
-        if(Level.DEBUG.equals(inEvent.getLevel())) {
-            if(exception == null) {
-                SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
-                                       message);
-            } else {
-                SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
-                                       exception,
-                                       message);
-            }
-        } else if(Level.INFO.equals(inEvent.getLevel())) {
-            if(exception == null) {
-                SLF4JLoggerProxy.info(Strategy.STRATEGY_MESSAGES,
-                                      message);
-            } else {
-                SLF4JLoggerProxy.info(Strategy.STRATEGY_MESSAGES,
-                                      exception,
-                                      message);
-            }
-        } else if(Level.WARN.equals(inEvent.getLevel())) {
-            if(exception == null) {
-                SLF4JLoggerProxy.warn(Strategy.STRATEGY_MESSAGES,
-                                      message);
-            } else {
-                SLF4JLoggerProxy.warn(Strategy.STRATEGY_MESSAGES,
-                                      exception,
-                                      message);
-            }
-        } else if(Level.ERROR.equals(inEvent.getLevel())) {
-            if(exception == null) {
-                SLF4JLoggerProxy.error(Strategy.STRATEGY_MESSAGES,
-                                       message);
-            } else {
-                SLF4JLoggerProxy.error(Strategy.STRATEGY_MESSAGES,
-                                       exception,
-                                       message);
-            }
-        }
-    }
-    /**
      * Gets a <code>StrategyModule</code> instance with the given parameters.
      * 
      * <p>The module returned is guaranteed to be a valid, unstarted <code>StrategyModule</code>.
@@ -803,9 +667,9 @@ final class StrategyModule
     static StrategyModule getStrategyModule(Object...inParameters)
         throws ModuleCreationException
     {
-        // must have 7 parameters, though the first and the last four may be null
+        // must have 8 parameters, though the first and the last four may be null
         if(inParameters == null ||
-           inParameters.length != 7) {
+           inParameters.length != 8) {
             throw new ModuleCreationException(PARAMETER_COUNT_ERROR);
         }
         // parameter 1 is the URN name of the strategy or null for the system to create a name
@@ -899,30 +763,43 @@ final class StrategyModule
                                                                          inParameters[4].getClass().getName()));
             }
         }
-        // parameter 6 is a Boolean.  This parameter may be null.  If non-null and true, it indicates that this strategy should route outgoing
-        //  orders to the ORS client.  Otherwise, orders will be swallowed.
-        boolean routeOrdersToORS = false;
+        // parameter 6 is the classpath.  This parameter may be null.  If non-null, it contains an array of Strings which are passed to the
+        //  script executor for use in a language-dependent fashion.
+        String[] classpath = null;
         if(inParameters[5] != null) {
-            if(inParameters[5] instanceof Boolean) {
-                routeOrdersToORS = (Boolean)inParameters[5];
+            if(inParameters[5] instanceof String[]) {
+                classpath = (String[])inParameters[5];
             } else {
                 throw new ModuleCreationException(new I18NBoundMessage3P(PARAMETER_TYPE_ERROR,
                                                                          6,
-                                                                         Boolean.class.getName(),
+                                                                         String[].class.getName(),
                                                                          inParameters[5].getClass().getName()));
             }
         }
         // parameter 7 is a ModuleURN.  This parameter may be null.  If non-null, it must describe a module instance that is started and able
-        //  to receive data.  All output will be sent to this module.
-        ModuleURN outputInstance = null;
+        //  to receive data.  Orders will be sent to this module when they are created.
+        ModuleURN ordersInstance = null;
         if(inParameters[6] != null) {
             if(inParameters[6] instanceof ModuleURN) {
-                outputInstance = (ModuleURN)inParameters[6];
+                ordersInstance = (ModuleURN)inParameters[6];
             } else {
                 throw new ModuleCreationException(new I18NBoundMessage3P(PARAMETER_TYPE_ERROR,
                                                                          7,
                                                                          ModuleURN.class.getName(),
                                                                          inParameters[6].getClass().getName()));
+            }
+        }
+        // parameter 8 is a ModuleURN.  This parameter may be null.  If non-null, it must describe a module instance that is started and able
+        //  to receive data.  Trade suggestions will be sent to this module when they are created.
+        ModuleURN suggestionsInstance = null;
+        if(inParameters[7] != null) {
+            if(inParameters[7] instanceof ModuleURN) {
+                suggestionsInstance = (ModuleURN)inParameters[7];
+            } else {
+                throw new ModuleCreationException(new I18NBoundMessage3P(PARAMETER_TYPE_ERROR,
+                                                                         8,
+                                                                         ModuleURN.class.getName(),
+                                                                         inParameters[7].getClass().getName()));
             }
         }
         return new StrategyModule(instanceName == null ? generateInstanceURN(name) : new ModuleURN(StrategyModuleFactory.PROVIDER_URN,
@@ -931,8 +808,9 @@ final class StrategyModule
                                   type,
                                   source,
                                   parameters,
-                                  routeOrdersToORS,
-                                  outputInstance);
+                                  classpath,
+                                  ordersInstance,
+                                  suggestionsInstance);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.module.Module#preStart()
@@ -954,17 +832,17 @@ final class StrategyModule
         assertStateForPreStart();
         // add destination data flows, if specified by the object parameters
         synchronized(dataFlows) {
-            if(outputDestination != null) {
+            if(ordersDestination != null) {
                 dataFlows.add(dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(getURN(),
-                                                                                                 OutputType.ALL),
-                                                                                 new DataRequest(outputDestination) },
+                                                                                                 OutputType.ORDERS),
+                                                                                 new DataRequest(ordersDestination) },
                                                              false));
             }
-            // set the connection to the ORS to the correct value
-            if(routeOrdersToORS) {
-                establishORSRouting();
-            } else {
-                disconnectORSRouting();
+            if(suggestionsDestination != null) {
+                dataFlows.add(dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(getURN(),
+                                                                                                 OutputType.SUGGESTIONS),
+                                                                                 new DataRequest(suggestionsDestination) },
+                                                             false));
             }
             // request execution reports from the ORS client
             try {
@@ -984,6 +862,7 @@ final class StrategyModule
                                         type,
                                         source,
                                         parameters,
+                                        classpath,
                                         getURN().instanceName(),
                                         this,
                                         this);
@@ -1001,7 +880,6 @@ final class StrategyModule
             throws ModuleException
     {
         cancelAllDataRequests();
-        disconnectORSRouting();
         try {
             strategy.stop();
         } catch (ModuleException e) {
@@ -1062,14 +940,12 @@ final class StrategyModule
                                            inNamespace));
     }
     /**
-     * Determines the correct set of statements to return depending on the CEP source. 
-     *
-     * This method is a hack to get around the lack of a consistent API for CEP.  One provider
-     * takes a different set of parameters than the other.
      * 
-     * @param inSource a <code>String</code> value containing the name of the CEP provider
-     * @param inStatements a <code>String[]</code> value containing the CEP statements
-     * @return an <code>Object</code> value containing the CEP statements to pass to the provider
+     *
+     *
+     * @param inSource
+     * @param inStatements
+     * @return
      */
     private static Object determineCepStatements(String inSource,
                                                  String[] inStatements)
@@ -1081,9 +957,10 @@ final class StrategyModule
         }
     }
     /**
-     * Constructs a <code>ModuleURN</code> to use to request market data.
+     * 
      *
-     * @param inSource a <code>String</code> value containing the name of the provider
+     *
+     * @param inSource
      * @return
      */
     private static ModuleURN constructMarketDataUrn(String inSource)
@@ -1099,8 +976,8 @@ final class StrategyModule
      * @param inType a <code>Language</code> value containing the language type as which to execute this strategy
      * @param inSource a <code>File</code> value containing the source of the strategy code
      * @param inParameters a <code>Properties</code> value containing parameters to pass to the strategy.  may be null.
-     * @param inRouteOrdersToORS a <code>boolean</code> value indicating whether to route orders to the ORS or not
-     * @param inOutputInstance a <code>ModuleURN</code> value containing a {@link DataReceiver} to which to pass outputs generated by this strategy.  may be null.
+     * @param inOrdersInstance a <code>ModuleURN</code> value containing a {@link DataReceiver} to which to pass orders generated by this strategy.  may be null.
+     * @param inSuggestionsInstance a <code>ModuleURN</code> value containing a {@link DataReceiver} to which to pass suggestions generated by this strategy.  may be null.
      * @throws ModuleCreationException if the strategy cannot be created
      */
     private StrategyModule(ModuleURN inURN,
@@ -1108,8 +985,9 @@ final class StrategyModule
                            Language inType,
                            File inSource,
                            Properties inParameters,
-                           boolean inRouteOrdersToORS,
-                           ModuleURN inOutputInstance)
+                           String[] inClasspath,
+                           ModuleURN inOrdersInstance,
+                           ModuleURN inSuggestionsInstance)
         throws ModuleCreationException
     {
         super(inURN,
@@ -1118,8 +996,9 @@ final class StrategyModule
         type = inType;
         source = inSource;
         parameters = inParameters;
-        routeOrdersToORS = inRouteOrdersToORS;
-        outputDestination = inOutputInstance;
+        classpath = inClasspath;
+        ordersDestination = inOrdersInstance;
+        suggestionsDestination = inSuggestionsInstance;
         MBeanNotificationInfo notifyInfo = new MBeanNotificationInfo(new String[] { AttributeChangeNotification.ATTRIBUTE_CHANGE },
                                                                      AttributeChangeNotification.class.getName(),
                                                                      BEAN_ATTRIBUTE_CHANGED.getText());
@@ -1151,10 +1030,9 @@ final class StrategyModule
                                                          false));
             establishedConnection = internalDataFlows.get(inCEPModule);
             if(establishedConnection == null) {
-                StrategyModule.log(LogEvent.warn(CANNOT_CREATE_CONNECTION,
-                                                 String.valueOf(strategy),
-                                                 inCEPModule),
-                                   strategy);
+                CANNOT_CREATE_CONNECTION.warn(Strategy.STRATEGY_MESSAGES,
+                                              strategy,
+                                              inCEPModule);
                 return;
             }
         }
@@ -1220,6 +1098,10 @@ final class StrategyModule
      */
     private void publish(Object inObject)
     {
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} publishing {}", //$NON-NLS-1$
+                               strategy,
+                               inObject);
         assert(inObject != null);
         if(inObject instanceof FIXOrder ||
            inObject instanceof OrderSingle ||
@@ -1230,10 +1112,6 @@ final class StrategyModule
             suggestionsPublisher.publish(inObject);
         } else if(inObject instanceof EventBase) {
             eventsPublisher.publish(inObject);
-        } else if(inObject instanceof Notification) {
-            notificationsPublisher.publish(inObject);
-        } else if(inObject instanceof String) {
-            logPublisher.publish(inObject);
         }
         allPublisher.publish(inObject);
     }
@@ -1267,49 +1145,6 @@ final class StrategyModule
         }
     }
     /**
-     * Disconnects the strategy from the ORS, if necessary.
-     * 
-     * If the strategy is not currently connected to the ORS, this method does nothing
-     *
-     * @throws ModuleException if the data flow cannot be disconnected
-     */
-    private void disconnectORSRouting()
-        throws ModuleException
-    {
-        SLF4JLoggerProxy.debug(this,
-                               "Breaking connection to ORS"); //$NON-NLS-1$
-        synchronized(dataFlows) {
-            if(orsFlow != null) {
-                dataFlowSupport.cancel(orsFlow);
-                dataFlows.remove(orsFlow);
-                orsFlow = null;
-            }
-        }
-    }
-    /**
-     * Connects the strategy to the ORS, if necessary. 
-     *
-     * If the strategy is already connected to the ORS, this method does nothing
-     * 
-     * @throws ModuleException if the data flow cannot be established
-     */
-    private void establishORSRouting()
-        throws ModuleException
-    {
-        SLF4JLoggerProxy.debug(this,
-                               "Establishing connection to ORS"); //$NON-NLS-1$
-        synchronized(dataFlows) {
-            if(orsFlow == null) {
-                // no current routing, establish one
-                orsFlow = dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(getURN(),
-                                                                                             OutputType.ORDERS),
-                                                                             new DataRequest(ClientModuleFactory.INSTANCE_URN) },
-                                                         false);
-                dataFlows.add(orsFlow);
-            }
-        }
-    }
-    /**
      * the name of the strategy being run - this name is chosen by the module caller and has no mandatory correlation 
      * to the contents of the strategy
      */
@@ -1323,17 +1158,21 @@ final class StrategyModule
      */
     private final File source;
     /**
-     * indicates if orders should be routed to the ORS client or not
-     */
-    private boolean routeOrdersToORS;
-    /**
      * the parameters to present to the strategy, may be empty or null.  may be null or empty.
      */
     private Properties parameters;
     /**
-     * the instanceURN of a destination for outputs, may be null.  if non-null, the object contract is to plumb a route from this object to the instance contained herein for all outputs before start.
+     * the classpath for the script executor to use in a language-dependent fashion
      */
-    private ModuleURN outputDestination;
+    private final String[] classpath;
+    /**
+     * the instanceURN of a destination for Orders, may be null.  if non-null, the object contract is to plumb a route from this object to the instance contained herein for orders before start.
+     */
+    private ModuleURN ordersDestination;
+    /**
+     * the instanceURN of a destination for Suggestions, may be null.  if non-null, the object contract is to plumb a route from this object to the instance contained herein for suggestions before start.
+     */
+    private ModuleURN suggestionsDestination;
     /**
      * the publishing engine for orders
      */
@@ -1346,14 +1185,6 @@ final class StrategyModule
      * the publishing engine for events
      */
     private final PublisherEngine eventsPublisher = new PublisherEngine(true);
-    /**
-     * the publishing engine for notification objects
-     */
-    private final PublisherEngine notificationsPublisher = new PublisherEngine(true);
-    /**
-     * the publishing engine for log output
-     */
-    private final PublisherEngine logPublisher = new PublisherEngine(true);
     /**
      * the publishing engine for all objects
      */
@@ -1370,10 +1201,6 @@ final class StrategyModule
      * services for data flow creation
      */
     private DataFlowSupport dataFlowSupport;
-    /**
-     * the data flow ID of the route to the ORS, if extant
-     */
-    private DataFlowID orsFlow;
     /**
      * client to use for services
      */
@@ -1470,10 +1297,6 @@ final class StrategyModule
                 suggestionsPublisher.subscribe(this);
             } else if(requestType.equals(OutputType.EVENTS)) {
                 eventsPublisher.subscribe(this);
-            } else if(requestType.equals(OutputType.NOTIFICATIONS)) {
-                notificationsPublisher.subscribe(this);
-            } else if(requestType.equals(OutputType.LOG)) {
-                logPublisher.subscribe(this);
             } else if(requestType.equals(OutputType.ALL)) {
                 allPublisher.subscribe(this);
             } else {
@@ -1507,10 +1330,6 @@ final class StrategyModule
                 suggestionsPublisher.unsubscribe(this);
             } else if(requestType.equals(OutputType.EVENTS)) {
                 eventsPublisher.unsubscribe(this);
-            } else if(requestType.equals(OutputType.NOTIFICATIONS)) {
-                notificationsPublisher.unsubscribe(this);
-            } else if(requestType.equals(OutputType.LOG)) {
-                logPublisher.unsubscribe(this);
             } else if(requestType.equals(OutputType.ALL)) {
                 allPublisher.unsubscribe(this);
             } else {

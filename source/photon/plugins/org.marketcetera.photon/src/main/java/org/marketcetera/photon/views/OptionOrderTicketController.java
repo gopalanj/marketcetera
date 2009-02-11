@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.marketcetera.core.ClassVersion;
 import org.marketcetera.core.CoreException;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.core.Pair;
 import org.marketcetera.photon.Messages;
 import org.marketcetera.photon.PhotonPlugin;
@@ -20,7 +21,6 @@ import org.marketcetera.photon.marketdata.OptionMessageHolder;
 import org.marketcetera.photon.marketdata.OptionMessageHolder.OptionPairKey;
 import org.marketcetera.quickfix.FIXMessageUtil;
 import org.marketcetera.quickfix.MarketceteraFIXException;
-import org.marketcetera.trade.MSymbol;
 import org.marketcetera.util.log.I18NBoundMessage2P;
 
 import quickfix.FieldNotFound;

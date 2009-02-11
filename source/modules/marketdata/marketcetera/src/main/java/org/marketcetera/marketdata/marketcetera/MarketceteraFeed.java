@@ -18,6 +18,7 @@ import org.marketcetera.core.ClassVersion;
 import org.marketcetera.core.CoreException;
 import org.marketcetera.core.IDFactory;
 import org.marketcetera.core.InMemoryIDFactory;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.core.NoMoreIDsException;
 import org.marketcetera.marketdata.AbstractMarketDataFeed;
 import org.marketcetera.marketdata.FIXCorrelationFieldSubscription;
@@ -29,7 +30,6 @@ import org.marketcetera.quickfix.EventLogFactory;
 import org.marketcetera.quickfix.FIXDataDictionary;
 import org.marketcetera.quickfix.FIXMessageUtil;
 import org.marketcetera.quickfix.FIXVersion;
-import org.marketcetera.trade.MSymbol;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
 
 import quickfix.Application;
@@ -607,7 +607,7 @@ public class MarketceteraFeed
             List<Group> groups = AbstractMessageTranslator.getGroups(inData);
             for(Group group : groups) {
                 MSymbol symbol = AbstractMessageTranslator.getSymbol(group);
-                handles.add(symbol.getFullSymbol());
+                handles.add(symbol.getBaseSymbol());
             }
             addSubscription(doQuery(inData),
                             handles);

@@ -82,6 +82,7 @@ public class JavaLanguageTest
                                                            strategy.getFile(),
                                                            null,
                                                            null,
+                                                           null,
                                                            null));
         verifyPropertyNonNull("onStart");
     }

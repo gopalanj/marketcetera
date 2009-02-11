@@ -2,8 +2,7 @@ package org.marketcetera.quickfix;
 
 import org.marketcetera.core.MarketceteraTestSuite;
 import org.marketcetera.core.ClassVersion;
-import org.marketcetera.trade.MSymbol;
-
+import org.marketcetera.core.MSymbol;
 import junit.framework.Test;
 import junit.framework.TestCase;
 

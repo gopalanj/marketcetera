@@ -10,7 +10,6 @@ import org.apache.bsf.BSFException;
 import org.apache.bsf.BSFManager;
 import org.jruby.exceptions.RaiseException;
 import org.marketcetera.core.ClassVersion;
-import org.marketcetera.event.LogEvent;
 import org.marketcetera.strategy.CompilationFailed.Diagnostic;
 import org.marketcetera.util.log.I18NBoundMessage1P;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
@@ -89,10 +88,8 @@ class BeanScriptingFrameworkEngine
                 }
             }
         } catch (BSFException e) {
-            StrategyModule.log(LogEvent.error(NO_SUPPORT_FOR_LANGUAGE,
-                                              e,
-                                              languageString),
-                               strategy);
+            NO_SUPPORT_FOR_LANGUAGE.error(Strategy.STRATEGY_MESSAGES,
+                                          languageString);
             throw new StrategyException(e,
                                         new I18NBoundMessage1P(NO_SUPPORT_FOR_LANGUAGE,
                                                                languageString));
@@ -117,11 +114,10 @@ class BeanScriptingFrameworkEngine
             if(e.getTargetException() instanceof RaiseException) {
                 failed.addDiagnostic(Diagnostic.error(RubyExecutor.exceptionAsString(e)));
             }
-            StrategyModule.log(LogEvent.error(COMPILATION_FAILED,
-                                              failed,
-                                              String.valueOf(strategy),
-                                              failed.toString()),
-                               strategy);
+            COMPILATION_FAILED.error(Strategy.STRATEGY_MESSAGES,
+                                     strategy);
+            SLF4JLoggerProxy.error(Strategy.STRATEGY_MESSAGES,
+                                   failed.toString());
             throw failed;
         }
    }
