@@ -9,6 +9,7 @@ import junit.framework.Test;
 import org.marketcetera.core.AccessViolator;
 import org.marketcetera.core.FIXVersionTestSuite;
 import org.marketcetera.core.FIXVersionedTestCase;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.quickfix.FIXVersion;
 import org.marketcetera.trade.*;
 

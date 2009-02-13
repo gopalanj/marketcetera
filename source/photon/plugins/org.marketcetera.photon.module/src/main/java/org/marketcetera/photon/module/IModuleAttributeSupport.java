@@ -12,7 +12,7 @@ import org.marketcetera.module.ModuleURN;
  * 
  * @author <a href="mailto:will@marketcetera.com">Will Horn</a>
  * @version $Id$
- * @since 1.1.0
+ * @since $Release$
  */
 @ClassVersion("$Id$")
 public interface IModuleAttributeSupport extends IModuleAttributeDefaults {

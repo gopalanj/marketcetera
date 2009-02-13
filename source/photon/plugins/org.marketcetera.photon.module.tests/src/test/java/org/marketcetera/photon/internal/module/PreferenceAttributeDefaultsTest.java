@@ -20,7 +20,7 @@ import org.osgi.service.prefs.Preferences;
  * 
  * @author <a href="mailto:will@marketcetera.com">Will Horn</a>
  * @version $Id$
- * @since 1.1.0
+ * @since $Release$
  */
 public class PreferenceAttributeDefaultsTest {
 

@@ -2,6 +2,7 @@ package org.marketcetera.trade;
 
 import org.marketcetera.util.misc.ClassVersion;
 import org.marketcetera.module.ExpectedFailure;
+import org.marketcetera.core.MSymbol;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;

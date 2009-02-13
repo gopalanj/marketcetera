@@ -53,7 +53,7 @@ public interface StrategyMXBean
     @DisplayName("A set of key/value pairs to provide to the strategy")
     public String getParameters();
     /**
-     * Sets the destination for output created by this strategy.
+     * Sets the destination for orders created by this strategy.
      * 
      * <p>The value passed must be a representation of a {@link ModuleURN} corresponding to a valid, started module
      * which implements {@link DataReceiver}.  If <code>inDestination</code> is null or empty, the current
@@ -64,30 +64,38 @@ public interface StrategyMXBean
      * @param inDestination a <code>String</code> value containing a valid, started {@link DataReceiver} {@link ModuleURN} or null
      * @throws IllegalArgumentException if <code>inDestination</code> cannot be parsed as a {@link ModuleURN}
      */
-    @DisplayName("The destination to which to send output created by the strategy")
-    public void setOutputDestination(String inDestination);
+    @DisplayName("The destination to which to send orders created by the strategy")
+    public void setOrdersDestination(String inDestination);
     /**
-     * Returns the current destination for output created by this strategy.
+     * Returns the current destination for orders created by this strategy.
      *
      * @return a <code>String</code> value containing a <code>String</code> representation of a {@link ModuleURN} or
      *   null if no destination has been established.
      */
-    @DisplayName("The destination to which to send output created by the strategy")
-    public String getOutputDestination();
+    @DisplayName("The destination to which to send orders created by the strategy")
+    public String getOrdersDestination();
     /**
-     * Indicates if the strategy is configured to route orders to the ORS.
+     * Sets the destination for trade suggestions created by this strategy.
+     * 
+     * <p>The value passed must be a representation of a {@link ModuleURN} corresponding to a valid, started module
+     * which implements {@link DataReceiver}.  If <code>inDestination</code> is null or empty, the current
+     * destination, if any, is disconnected.
+     * 
+     * <p>Note that this method will have no effect on any data flows established externally.
      *
-     * @return a <code>boolean</code> value
+     * @param inDestination a <code>String</code> value containing a valid, started {@link DataReceiver} {@link ModuleURN} or null
+     * @throws IllegalArgumentException if <code>inDestination</code> cannot be parsed as a {@link ModuleURN}
      */
-    @DisplayName("Indicates if this strategy is currently set to route orders to the ORS")
-    public boolean isRoutingOrdersToORS();
+    @DisplayName("The destination to which to send trade suggestions created by the strategy")
+    public void setSuggestionsDestination(String inDestination);
     /**
-     * Determines if the strategy is configured to route orders to the ORS.
+     * Returns the current destination for trade suggestions created by this strategy.
      *
-     * @param inValue a <code>boolean</code> value
+     * @return a <code>String</code> value containing a <code>String</code> representation of a {@link ModuleURN} or
+     *   null if no destination has been established.
      */
-    @DisplayName("Determines if this strategy is currently set to route orders to the ORS")
-    public void setIsRountingOrdersToORS(boolean inValue);
+    @DisplayName("The destination to which to send trade suggestions created by the strategy")
+    public String getSuggestionsDestination();
     /**
      * Gets the strategy status. 
      *

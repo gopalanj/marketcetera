@@ -10,7 +10,7 @@ import javax.management.MXBean;
  *
  * @author anshul@marketcetera.com
  * @version $Id$
- * @since 1.1.0
+ * @since $Release$
  */
 @ClassVersion("$Id$")
 @MXBean(true)

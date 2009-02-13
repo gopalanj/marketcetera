@@ -11,7 +11,7 @@ import org.marketcetera.core.ClassVersion;
  *
  * @author <a href="mailto:colin@marketcetera.com">Colin DuPlantis</a>
  * @version $Id$
- * @since 1.1.0
+ * @since $Release$
  */
 @ClassVersion("$Id$")
 public abstract class AbstractMarketDataFeedURLCredentials

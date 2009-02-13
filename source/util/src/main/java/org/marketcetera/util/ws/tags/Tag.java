@@ -4,8 +4,6 @@ import java.io.Serializable;
 import org.apache.commons.lang.ObjectUtils;
 import org.marketcetera.util.misc.ClassVersion;
 
-import javax.xml.bind.annotation.XmlValue;
-
 /**
  * A generic ID tag.
  * 
@@ -74,7 +72,6 @@ public class Tag
      * @return The ID value.
      */
 
-    @XmlValue
     public String getValue()
     {
         return mValue;

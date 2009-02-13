@@ -17,7 +17,6 @@ import org.marketcetera.core.ClassVersion;
 public class BidEvent
         extends BidAskEvent
 {
-    private static final long serialVersionUID = 1L;
     /**
      * Create a new BidEvent instance.
      *

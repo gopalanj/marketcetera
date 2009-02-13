@@ -18,7 +18,7 @@
   <parent>
     <groupId>org.marketcetera</groupId>
     <artifactId>source</artifactId>
-    <version>1.2.0</version>
+    <version>1.1.0</version>
   </parent>
   <artifactId>client</artifactId>
   <packaging>jar</packaging>
@@ -112,22 +112,6 @@
               <arguments>
                 <argument>src/test/sample_data/inputs/equity.txt</argument>
               </arguments>
-              <classpathScope>test</classpathScope>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <!-- Generate XML Schema -->
-    <profile>
-      <id>schemaGen</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <configuration>
-              <mainClass>org.marketcetera.client.SchemaGen</mainClass>
               <classpathScope>test</classpathScope>
             </configuration>
           </plugin>

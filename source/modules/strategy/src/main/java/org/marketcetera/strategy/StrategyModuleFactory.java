@@ -41,7 +41,8 @@ public final class StrategyModuleFactory
               Object.class,
               File.class,
               Properties.class,
-              Boolean.class,
+              String[].class,
+              ModuleURN.class,
               ModuleURN.class);
     }
     /* (non-Javadoc)

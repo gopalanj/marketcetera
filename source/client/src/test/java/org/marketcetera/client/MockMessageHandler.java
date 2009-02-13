@@ -4,6 +4,7 @@ import org.marketcetera.util.misc.ClassVersion;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
 import org.marketcetera.trade.*;
 import org.marketcetera.quickfix.FIXVersion;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.event.HasFIXMessage;
 
 import java.util.LinkedList;

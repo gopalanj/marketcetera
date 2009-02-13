@@ -39,18 +39,18 @@ import javax.management.ObjectName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.marketcetera.client.BrokerStatusListener;
 import org.marketcetera.client.Client;
 import org.marketcetera.client.ClientParameters;
 import org.marketcetera.client.ConnectionException;
+import org.marketcetera.client.BrokerStatusListener;
 import org.marketcetera.client.OrderValidationException;
 import org.marketcetera.client.ReportListener;
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.client.brokers.BrokersStatus;
 import org.marketcetera.core.BigDecimalUtils;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
-import org.marketcetera.event.LogEvent;
 import org.marketcetera.event.TradeEvent;
 import org.marketcetera.marketdata.MarketDataFeedTestBase;
 import org.marketcetera.marketdata.bogus.BogusFeedModuleFactory;
@@ -76,7 +76,6 @@ import org.marketcetera.quickfix.FIXVersion;
 import org.marketcetera.trade.BrokerID;
 import org.marketcetera.trade.ExecutionReport;
 import org.marketcetera.trade.FIXOrder;
-import org.marketcetera.trade.MSymbol;
 import org.marketcetera.trade.OrderCancel;
 import org.marketcetera.trade.OrderCancelReject;
 import org.marketcetera.trade.OrderReplace;
@@ -160,7 +159,6 @@ public class StrategyTestBase
          * indicates if the module should emit execution reports when it receives OrderSingle objects
          */
         public static boolean shouldSendExecutionReports = true;
-        public static boolean shouldIgnoreLogMessages = true;
         public static int ordersReceived = 0;
         /**
          * Create a new MockRecorderModule instance.
@@ -196,11 +194,6 @@ public class StrategyTestBase
                                 Object inData)
                 throws UnsupportedDataTypeException, StopDataFlowException
         {
-            if(inData instanceof LogEvent) {
-                if(shouldIgnoreLogMessages) {
-                    return;
-                }
-            }
             synchronized(data) {
                 data.add(new DataReceived(inFlowID,
                                           inData));
@@ -627,7 +620,7 @@ public class StrategyTestBase
             throw new UnsupportedOperationException();
         }
         /* (non-Javadoc)
-         * @see org.marketcetera.client.Client#getPositionAsOf(java.util.Date, org.marketcetera.trade.MSymbol)
+         * @see org.marketcetera.client.Client#getPositionAsOf(java.util.Date, org.marketcetera.core.MSymbol)
          */
         @Override
         public BigDecimal getPositionAsOf(Date inDate,
@@ -1039,17 +1032,19 @@ public class StrategyTestBase
         MockClient.getPositionFails = false;
         executionReportMultiplicity = 1;
         MockRecorderModule.shouldSendExecutionReports = true;
-        MockRecorderModule.shouldIgnoreLogMessages = true;
         MockRecorderModule.ordersReceived = 0;
         StrategyModule.orsClient = new MockClient();
         moduleManager = new ModuleManager();
         moduleManager.init();
-        outputURN = moduleManager.createModule(MockRecorderModule.Factory.PROVIDER_URN);
-        moduleManager.start(outputURN);
+        ordersURN = moduleManager.createModule(MockRecorderModule.Factory.PROVIDER_URN);
+        moduleManager.start(ordersURN);
+        suggestionsURN = moduleManager.createModule(MockRecorderModule.Factory.PROVIDER_URN);
+        moduleManager.start(suggestionsURN);
         moduleManager.start(bogusDataFeedURN);
         factory = new StrategyModuleFactory();
         runningModules.clear();
-        runningModules.add(outputURN);
+        runningModules.add(suggestionsURN);
+        runningModules.add(ordersURN);
         runningModules.add(bogusDataFeedURN);
         setPropertiesToNull();
         tradeEvent = new TradeEvent(System.nanoTime(),
@@ -1083,11 +1078,17 @@ public class StrategyTestBase
             }
         }
         try {
-            moduleManager.stop(outputURN);
+            moduleManager.stop(ordersURN);
         } catch (ModuleException ignore) {
                 // ignore failures, just press ahead
         }
-        moduleManager.deleteModule(outputURN);
+        moduleManager.deleteModule(ordersURN);
+        try {
+            moduleManager.stop(suggestionsURN);
+        } catch (ModuleException ignore) {
+            // ignore failures, just press ahead
+        }
+        moduleManager.deleteModule(suggestionsURN);
         moduleManager.stop();
     }
     /**
@@ -1160,7 +1161,7 @@ public class StrategyTestBase
     protected final DataFlowID setupMockORSConnection(ModuleURN inStrategyURN)
         throws Exception
     {
-        DataFlowID flowID = moduleManager.createDataFlow(new DataRequest[] { new DataRequest(outputURN),
+        DataFlowID flowID = moduleManager.createDataFlow(new DataRequest[] { new DataRequest(ordersURN),
                                                                              new DataRequest(inStrategyURN) },
                                                          false);
         synchronized(dataFlowsByStrategy) {
@@ -1404,12 +1405,11 @@ public class StrategyTestBase
     {
         verifyNullProperties();
         LinkedList<Object> actualParameters = new LinkedList<Object>(Arrays.asList(inParameters));
-        if(inParameters.length <= 6) {
+        if(inParameters.length <= 7) {
             actualParameters.addFirst(null);
         }
         ModuleURN strategyURN = createModule(StrategyModuleFactory.PROVIDER_URN,
                                              actualParameters.toArray());
-        theStrategy = strategyURN;
         verifyStrategyReady(strategyURN);
         return strategyURN;
     }
@@ -1486,9 +1486,13 @@ public class StrategyTestBase
      */
     protected ModuleFactory factory;
     /**
-     * test destination of output
+     * test destination of orders
      */
-    protected ModuleURN outputURN;
+    protected ModuleURN ordersURN;
+    /**
+     * test destination of suggestions
+     */
+    protected ModuleURN suggestionsURN;
     /**
      * list of strategies started during test
      */

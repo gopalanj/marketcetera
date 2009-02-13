@@ -1,48 +1,26 @@
 package org.marketcetera.strategy;
 
 import static org.marketcetera.strategy.Messages.CALLBACK_ERROR;
-import static org.marketcetera.strategy.Messages.CANCELING_ALL_DATA_REQUESTS;
-import static org.marketcetera.strategy.Messages.CANCELING_DATA_REQUEST;
-import static org.marketcetera.strategy.Messages.CANCEL_REQUEST_SUBMITTED;
 import static org.marketcetera.strategy.Messages.CANNOT_REQUEST_DATA;
 import static org.marketcetera.strategy.Messages.CANNOT_RETRIEVE_BROKERS;
 import static org.marketcetera.strategy.Messages.CANNOT_RETRIEVE_POSITION;
 import static org.marketcetera.strategy.Messages.CANNOT_SEND_DATA;
 import static org.marketcetera.strategy.Messages.CEP_REQUEST_FAILED;
 import static org.marketcetera.strategy.Messages.COMBINED_DATA_REQUEST_FAILED;
-import static org.marketcetera.strategy.Messages.EXECUTING_CALLBACK;
-import static org.marketcetera.strategy.Messages.EXECUTION_REPORTS_FOUND;
 import static org.marketcetera.strategy.Messages.INVALID_CANCEL;
 import static org.marketcetera.strategy.Messages.INVALID_CEP_REQUEST;
 import static org.marketcetera.strategy.Messages.INVALID_EVENT;
 import static org.marketcetera.strategy.Messages.INVALID_EVENT_TO_CEP;
-import static org.marketcetera.strategy.Messages.INVALID_LOG;
 import static org.marketcetera.strategy.Messages.INVALID_MARKET_DATA_REQUEST;
 import static org.marketcetera.strategy.Messages.INVALID_MESSAGE;
-import static org.marketcetera.strategy.Messages.INVALID_NOTIFICATION;
 import static org.marketcetera.strategy.Messages.INVALID_ORDER;
 import static org.marketcetera.strategy.Messages.INVALID_ORDERID;
 import static org.marketcetera.strategy.Messages.INVALID_POSITION_REQUEST;
 import static org.marketcetera.strategy.Messages.INVALID_REPLACEMENT_ORDER;
 import static org.marketcetera.strategy.Messages.INVALID_TRADE_SUGGESTION;
-import static org.marketcetera.strategy.Messages.MESSAGE_1P;
-import static org.marketcetera.strategy.Messages.NO_EXECUTION_REPORT;
 import static org.marketcetera.strategy.Messages.NO_PARAMETERS;
 import static org.marketcetera.strategy.Messages.NULL_PROPERTY_KEY;
 import static org.marketcetera.strategy.Messages.ORDER_CANCEL_FAILED;
-import static org.marketcetera.strategy.Messages.RECEIVED_BROKERS;
-import static org.marketcetera.strategy.Messages.RECEIVED_POSITION;
-import static org.marketcetera.strategy.Messages.SUBMITTING_CANCEL_ALL_ORDERS_REQUEST;
-import static org.marketcetera.strategy.Messages.SUBMITTING_CANCEL_ORDER_REQUEST;
-import static org.marketcetera.strategy.Messages.SUBMITTING_CANCEL_REPLACE_REQUEST;
-import static org.marketcetera.strategy.Messages.SUBMITTING_CEP_REQUEST;
-import static org.marketcetera.strategy.Messages.SUBMITTING_EVENT_TO_CEP;
-import static org.marketcetera.strategy.Messages.SUBMITTING_FIX_MESSAGE;
-import static org.marketcetera.strategy.Messages.SUBMITTING_MARKET_DATA_REQUEST;
-import static org.marketcetera.strategy.Messages.SUBMITTING_ORDER;
-import static org.marketcetera.strategy.Messages.SUBMITTING_PROCESSED_MARKET_DATA_REQUEST;
-import static org.marketcetera.strategy.Messages.SUBMITTING_TRADE_SUGGESTION;
-import static org.marketcetera.strategy.Messages.USING_EXECUTION_REPORT;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -59,15 +37,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.core.ClassVersion;
-import org.marketcetera.core.notifications.Notification;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.event.EventBase;
-import org.marketcetera.event.LogEvent;
 import org.marketcetera.marketdata.DataRequest;
 import org.marketcetera.marketdata.MarketDataRequest;
 import org.marketcetera.trade.BrokerID;
 import org.marketcetera.trade.ExecutionReport;
 import org.marketcetera.trade.Factory;
-import org.marketcetera.trade.MSymbol;
 import org.marketcetera.trade.OrderCancel;
 import org.marketcetera.trade.OrderID;
 import org.marketcetera.trade.OrderReplace;
@@ -204,7 +180,7 @@ public abstract class AbstractRunningStrategy
     {
         Properties parameters = strategy.getParameters();
         if(parameters == null) {
-            NO_PARAMETERS.warn(AbstractRunningStrategy.class,
+            NO_PARAMETERS.info(AbstractRunningStrategy.class,
                                strategy);
             return null;
         }
@@ -221,38 +197,35 @@ public abstract class AbstractRunningStrategy
                                           String inSource)
     {
         if(!canReceiveData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_REQUEST_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_REQUEST_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                     strategy,
+                                     strategy.getStatus());
             return 0;
         }
         if(inSymbols != null &&
            !inSymbols.isEmpty()) {
             try {
                 MarketDataRequest request = constructMarketDataRequest(inSymbols);
-                StrategyModule.log(LogEvent.debug(SUBMITTING_MARKET_DATA_REQUEST,
-                                                  String.valueOf(strategy),
-                                                  String.valueOf(request),
-                                                  inSource),
-                                   strategy);
+                SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                       "{} requesting market data {} from {}", //$NON-NLS-1$
+                                       strategy,
+                                       request,
+                                       inSource);
                 return strategy.getOutboundServicesProvider().requestMarketData(request,
                                                                                 inSource);
             } catch (Exception e) {
-                StrategyModule.log(LogEvent.warn(INVALID_MARKET_DATA_REQUEST,
+                INVALID_MARKET_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
                                                  e,
-                                                 String.valueOf(strategy),
+                                                 strategy,
                                                  inSymbols,
-                                                 inSource),
-                                   strategy);
+                                                 inSource);
                 return 0;
             }
         }
-        StrategyModule.log(LogEvent.warn(INVALID_MARKET_DATA_REQUEST,
-                                         String.valueOf(strategy),
+        INVALID_MARKET_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                         strategy,
                                          inSymbols,
-                                         inSource),
-                           strategy);
+                                         inSource);
         return 0;
     }
     /**
@@ -273,33 +246,29 @@ public abstract class AbstractRunningStrategy
                                                    String inCepSource)
     {
         if(!canReceiveData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_REQUEST_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_REQUEST_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                     strategy,
+                                     strategy.getStatus());
             return 0;
         }
         if(inSymbols == null ||
            inSymbols.isEmpty() ||
            inMarketDataSource == null ||
            inMarketDataSource.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_MARKET_DATA_REQUEST,
-                                             String.valueOf(strategy),
+            INVALID_MARKET_DATA_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                             strategy,
                                              inSymbols,
-                                             inMarketDataSource),
-                               strategy);
+                                             inMarketDataSource);
             return 0;
         }
         if(inStatements == null ||
            inStatements.length == 0 ||
            inCepSource == null ||
            inCepSource.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_CEP_REQUEST,
-                                             String.valueOf(strategy),
-                                             Arrays.toString(inStatements),
-                                             inCepSource,
-                                             strategy.getDefaultNamespace()),
-                               strategy);
+            INVALID_CEP_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                     strategy,
+                                     Arrays.toString(inStatements),
+                                     inCepSource);
             return 0;
         }
         MarketDataRequest marketDataRequest = null;
@@ -308,28 +277,27 @@ public abstract class AbstractRunningStrategy
             // construct market data request
             marketDataRequest = constructMarketDataRequest(inSymbols);
             // retrieve CEP default namespace
-            StrategyModule.log(LogEvent.debug(SUBMITTING_PROCESSED_MARKET_DATA_REQUEST,
-                                              String.valueOf(strategy),
-                                              String.valueOf(marketDataRequest),
-                                              inMarketDataSource,
-                                              Arrays.toString(inStatements),
-                                              inCepSource,
-                                              namespace),
-                               strategy);
+            SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                   "{} requesting market data {} from {} with cep query {} from {}:{}", //$NON-NLS-1$
+                                   strategy,
+                                   marketDataRequest.toString(),
+                                   inMarketDataSource,
+                                   Arrays.toString(inStatements),
+                                   inCepSource,
+                                   namespace);
             return strategy.getOutboundServicesProvider().requestProcessedMarketData(marketDataRequest,
                                                                                    inMarketDataSource,
                                                                                    inStatements,
                                                                                    inCepSource,
                                                                                    namespace);
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(COMBINED_DATA_REQUEST_FAILED,
-                                             e,
-                                             String.valueOf(marketDataRequest),
-                                             inMarketDataSource,
-                                             Arrays.toString(inStatements),
-                                             inCepSource,
-                                             namespace),
-                               strategy);
+            COMBINED_DATA_REQUEST_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                              e,
+                                              marketDataRequest,
+                                              inMarketDataSource,
+                                              Arrays.toString(inStatements),
+                                              inCepSource,
+                                              namespace);
             return 0;
         }
    }
@@ -340,10 +308,10 @@ public abstract class AbstractRunningStrategy
      */
     protected final void cancelDataRequest(int inRequestID)
     {
-        StrategyModule.log(LogEvent.debug(CANCELING_DATA_REQUEST,
-                                          String.valueOf(strategy),
-                                          String.valueOf(inRequestID)),                           
-                           strategy);                           
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} cancelling data request {}", //$NON-NLS-1$
+                               strategy,
+                               inRequestID);
         strategy.getOutboundServicesProvider().cancelDataRequest(inRequestID);
     }
     /**
@@ -351,9 +319,9 @@ public abstract class AbstractRunningStrategy
      */
     protected final void cancelAllDataRequests()
     {
-        StrategyModule.log(LogEvent.debug(CANCELING_ALL_DATA_REQUESTS,
-                                          String.valueOf(strategy)),                           
-                           strategy);                           
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} cancelling all data requests", //$NON-NLS-1$
+                               strategy);
         strategy.getOutboundServicesProvider().cancelAllDataRequests();
     }
     /**
@@ -371,39 +339,35 @@ public abstract class AbstractRunningStrategy
                                        String inSource)
     {
         if(!canReceiveData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_REQUEST_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_REQUEST_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                     strategy,
+                                     strategy.getStatus());
             return 0;
         }
         if(inStatements == null ||
            inStatements.length == 0 ||
            inSource == null ||
            inSource.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_CEP_REQUEST,
-                                             String.valueOf(strategy),
-                                             Arrays.toString(inStatements),
-                                             inSource,
-                                             strategy.getDefaultNamespace()),
-                               strategy);
+                 INVALID_CEP_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                          strategy,
+                                          Arrays.toString(inStatements),
+                                          inSource);
                  return 0;
              }
         try {
-            StrategyModule.log(LogEvent.debug(SUBMITTING_CEP_REQUEST,
-                                              String.valueOf(strategy),
-                                              Arrays.toString(inStatements),
-                                              inSource,
-                                              strategy.getDefaultNamespace()),
-                               strategy);
+            SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                   "{} requesting CEP data {} from {} ({})", //$NON-NLS-1$
+                                   strategy,
+                                   Arrays.toString(inStatements),
+                                   inSource,
+                                   strategy.getDefaultNamespace());
             return strategy.getOutboundServicesProvider().requestCEPData(inStatements,
                                                                          inSource,
                                                                          strategy.getDefaultNamespace());
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(CEP_REQUEST_FAILED,
-                                             e,
-                                             String.valueOf(strategy)),
-                               strategy);
+            CEP_REQUEST_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                     e,
+                                     strategy);
             return 0;
         }
     }
@@ -444,19 +408,17 @@ public abstract class AbstractRunningStrategy
                                       String inIdentifier)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return;
         }
         if(inOrder == null ||
            inScore == null ||
            inIdentifier == null ||
            inIdentifier.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_TRADE_SUGGESTION,
-                                             String.valueOf(strategy)),
-                               strategy);
+            INVALID_TRADE_SUGGESTION.warn(Strategy.STRATEGY_MESSAGES,
+                                          strategy);
             return;
         }
         assert(strategy != null);
@@ -464,10 +426,10 @@ public abstract class AbstractRunningStrategy
         suggestion.setOrder(inOrder);
         suggestion.setScore(inScore);
         suggestion.setIdentifier(inIdentifier);
-        StrategyModule.log(LogEvent.debug(SUBMITTING_TRADE_SUGGESTION,
-                                          String.valueOf(strategy),
-                                          suggestion),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} suggesting trade {}", //$NON-NLS-1$
+                               strategy,
+                               suggestion);
         strategy.getOutboundServicesProvider().sendSuggestion(suggestion);
     }
     /**
@@ -479,24 +441,22 @@ public abstract class AbstractRunningStrategy
     protected final OrderID sendOrder(OrderSingle inOrder)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return null;
         }
         if(inOrder == null ||
            inOrder.getOrderID() == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_ORDER,
-                                             String.valueOf(strategy)),
+            INVALID_ORDER.warn(Strategy.STRATEGY_MESSAGES,
                                strategy);
             return null;
         }
-        StrategyModule.log(LogEvent.debug(SUBMITTING_ORDER,
-                                          String.valueOf(strategy),
-                                          inOrder,
-                                          inOrder.getOrderID()),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} sending order {}({})", //$NON-NLS-1$
+                               strategy,
+                               inOrder,
+                               inOrder.getOrderID());
         submittedOrderManager.add(inOrder);
         strategy.getOutboundServicesProvider().sendOrder(inOrder);
         return inOrder.getOrderID();
@@ -515,24 +475,21 @@ public abstract class AbstractRunningStrategy
     protected final boolean cancelOrder(OrderID inOrderID)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return false;
         }
         if(inOrderID == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_CANCEL,
-                                             String.valueOf(strategy)),
-                               strategy);
+            INVALID_CANCEL.warn(Strategy.STRATEGY_MESSAGES,
+                                strategy);
             return false;
         }
         Entry order = submittedOrderManager.remove(inOrderID);
         if(order == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_ORDERID,
-                                             String.valueOf(strategy),
-                                             String.valueOf(inOrderID)),
-                               strategy);
+            INVALID_ORDERID.warn(Strategy.STRATEGY_MESSAGES,
+                                 strategy,
+                                 inOrderID);
             return false;
         }
         OrderCancel cancelRequest;
@@ -549,10 +506,10 @@ public abstract class AbstractRunningStrategy
             // use the most recent execution report to seed the cancel request
             cancelRequest = Factory.getInstance().createOrderCancel(executionReportToUse);
         }
-        StrategyModule.log(LogEvent.debug(SUBMITTING_CANCEL_ORDER_REQUEST,
-                                          String.valueOf(strategy),
-                                          String.valueOf(cancelRequest)),                           
-                           strategy);                           
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} submitting cancel request {}", //$NON-NLS-1$
+                               strategy,
+                               cancelRequest);
         strategy.getOutboundServicesProvider().cancelOrder(cancelRequest);
         return true;
     }
@@ -569,15 +526,14 @@ public abstract class AbstractRunningStrategy
     protected final int cancelAllOrders()
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return 0;
         }
-        StrategyModule.log(LogEvent.debug(SUBMITTING_CANCEL_ALL_ORDERS_REQUEST,
-                                          String.valueOf(strategy)),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} submitting request to cancel all orders", //$NON-NLS-1$
+                               strategy);
         // gets a copy of the submitted orders list - iterate over the copy in
         // order to prevent concurrent update problems
         int count = 0;
@@ -587,17 +543,16 @@ public abstract class AbstractRunningStrategy
                     count += 1;
                 }
             } catch (Exception e) {
-                StrategyModule.log(LogEvent.warn(ORDER_CANCEL_FAILED,
-                                                 e,
-                                                 String.valueOf(strategy),
-                                                 order.getOrderID()),
-                                   strategy);
+                ORDER_CANCEL_FAILED.warn(Strategy.STRATEGY_MESSAGES,
+                                         e,
+                                         strategy,
+                                         order.getOrderID());
             }
         }
-        StrategyModule.log(LogEvent.debug(CANCEL_REQUEST_SUBMITTED,
-                                          String.valueOf(strategy),
-                                          count),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} submitted request to cancel {} order(s)", //$NON-NLS-1$
+                               strategy,
+                               count);
         return count;
     }
     /**
@@ -615,26 +570,23 @@ public abstract class AbstractRunningStrategy
                                           OrderSingle inNewOrder)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return null;
         }
         if(inOrderID == null ||
            inNewOrder == null ||
            inNewOrder.getOrderID() == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_REPLACEMENT_ORDER,
-                                             String.valueOf(strategy)),
-                               strategy);
+            INVALID_REPLACEMENT_ORDER.warn(Strategy.STRATEGY_MESSAGES,
+                                           strategy);
             return null;
         }
         Entry order = submittedOrderManager.remove(inOrderID);
         if(order == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_ORDERID,
-                                             String.valueOf(strategy),
-                                             String.valueOf(inOrderID)),
-                               strategy);
+            INVALID_ORDERID.warn(Strategy.STRATEGY_MESSAGES,
+                                 strategy,
+                                 inOrderID);
             return null;
         }
         assert(inNewOrder.getOrderID() != null);
@@ -654,10 +606,10 @@ public abstract class AbstractRunningStrategy
         replaceOrder.setQuantity(inNewOrder.getQuantity());
         replaceOrder.setPrice(inNewOrder.getPrice());
         replaceOrder.setTimeInForce(inNewOrder.getTimeInForce());
-        StrategyModule.log(LogEvent.debug(SUBMITTING_CANCEL_REPLACE_REQUEST,
-                                          String.valueOf(strategy),
-                                          String.valueOf(replaceOrder)),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} submitting cancel replace request {}", //$NON-NLS-1$
+                               strategy,
+                               replaceOrder);
         submittedOrderManager.add(inNewOrder);
         strategy.getOutboundServicesProvider().cancelReplace(replaceOrder);
         return inNewOrder.getOrderID();
@@ -672,24 +624,22 @@ public abstract class AbstractRunningStrategy
                                      BrokerID inBroker)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return;
         }
         if(inMessage == null ||
            inBroker == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_MESSAGE,
-                                             String.valueOf(strategy)),
-                               strategy);
+            INVALID_MESSAGE.warn(Strategy.STRATEGY_MESSAGES,
+                                 strategy);
             return;
         }
-        StrategyModule.log(LogEvent.debug(SUBMITTING_FIX_MESSAGE,
-                                          String.valueOf(strategy),
-                                          inMessage,
-                                          inBroker),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} sending FIX message {} to {}", //$NON-NLS-1$
+                               strategy,
+                               inMessage,
+                               inBroker);
         strategy.getOutboundServicesProvider().sendMessage(inMessage,
                                                            inBroker);
     }
@@ -705,29 +655,27 @@ public abstract class AbstractRunningStrategy
                                         String inProvider)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return;
         }
         if(inEvent == null ||
            inProvider == null ||
            inProvider.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_EVENT_TO_CEP,
-                                             String.valueOf(strategy),
-                                             inEvent,
-                                             inProvider),
-                               strategy);
+            INVALID_EVENT_TO_CEP.warn(Strategy.STRATEGY_MESSAGES,
+                                      strategy,
+                                      inEvent,
+                                      inProvider);
             return;
         }
         String namespace = strategy.getDefaultNamespace();
-        StrategyModule.log(LogEvent.debug(SUBMITTING_EVENT_TO_CEP,
-                                          String.valueOf(strategy),
-                                          inEvent,
-                                          inProvider,
-                                          namespace),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} sending {} to CEP {}:{}", //$NON-NLS-1$
+                               strategy,
+                               inEvent,
+                               inProvider,
+                               namespace);
         strategy.getOutboundServicesProvider().sendEvent(inEvent,
                                                          inProvider,
                                                          namespace);
@@ -740,36 +688,19 @@ public abstract class AbstractRunningStrategy
     protected final void sendEvent(EventBase inEvent)
     {
         if(!canSendData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_SEND_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_SEND_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                  strategy,
+                                  strategy.getStatus());
             return;
         }
        if(inEvent == null) {
-           StrategyModule.log(LogEvent.warn(INVALID_EVENT,
-                                            String.valueOf(strategy)),
+           INVALID_EVENT.warn(Strategy.STRATEGY_MESSAGES,
                               strategy);
            return;
        }
        strategy.getOutboundServicesProvider().sendEvent(inEvent,
                                                         null,
                                                         null);
-    }
-    /**
-     * Sends the given notification to the appropriate subscribers.
-     *
-     * @param inNotification a <code>Notification</code> value
-     */
-    protected final void sendNotification(Notification inNotification)
-    {
-        if(inNotification == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_NOTIFICATION,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        strategy.getOutboundServicesProvider().sendNotification(inNotification);
     }
     /**
      * Requests a callback after a specified delay in milliseconds.
@@ -792,7 +723,6 @@ public abstract class AbstractRunningStrategy
                                               Object inData)
     {
         callbackService.schedule(new Callback(this,
-                                              strategy,
                                               inData),
                                  inDelay,
                                  TimeUnit.MILLISECONDS);
@@ -831,23 +761,21 @@ public abstract class AbstractRunningStrategy
     {
         try {
             if(!canReceiveData()) {
-                StrategyModule.log(LogEvent.warn(CANNOT_REQUEST_DATA,
-                                                 String.valueOf(strategy),
-                                                 strategy.getStatus()),
-                                   strategy);
+                CANNOT_REQUEST_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                         strategy,
+                                         strategy.getStatus());
                 return new BrokerStatus[0];
             }
             List<BrokerStatus> brokers = strategy.getInboundServicesProvider().getBrokers();
-            StrategyModule.log(LogEvent.debug(RECEIVED_BROKERS,
-                                              String.valueOf(strategy),
-                                              (brokers == null ? "[]" : Arrays.toString(brokers.toArray()))), //$NON-NLS-1$
-                               strategy);
+            SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                   "{} received the following brokers: {}", //$NON-NLS-1$
+                                   strategy,
+                                   brokers == null ? "null" : Arrays.toString(brokers.toArray())); //$NON-NLS-1$
             return brokers.toArray(new BrokerStatus[brokers.size()]);
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(CANNOT_RETRIEVE_BROKERS,
-                                             e,
-                                             String.valueOf(strategy)),
-                               strategy);
+            CANNOT_RETRIEVE_BROKERS.warn(Strategy.STRATEGY_MESSAGES,
+                                         e,
+                                         strategy);
             return new BrokerStatus[0];
         }
     }
@@ -862,105 +790,38 @@ public abstract class AbstractRunningStrategy
                                                String inSymbol)
     {
         if(!canReceiveData()) {
-            StrategyModule.log(LogEvent.warn(CANNOT_REQUEST_DATA,
-                                             String.valueOf(strategy),
-                                             strategy.getStatus()),
-                               strategy);
+            CANNOT_REQUEST_DATA.warn(Strategy.STRATEGY_MESSAGES,
+                                     strategy,
+                                     strategy.getStatus());
             return null;
         }
         if(inDate == null ||
            inSymbol == null ||
            inSymbol.isEmpty()) {
-            StrategyModule.log(LogEvent.warn(INVALID_POSITION_REQUEST,
-                                             String.valueOf(strategy),
-                                             inDate,
-                                             inSymbol),
-                               strategy);
+            INVALID_POSITION_REQUEST.warn(Strategy.STRATEGY_MESSAGES,
+                                          strategy,
+                                          inDate,
+                                          inSymbol);
             return null;
         }
         try {
             BigDecimal result = strategy.getInboundServicesProvider().getPositionAsOf(inDate,
                                                                                       new MSymbol(inSymbol)); 
-            StrategyModule.log(LogEvent.debug(RECEIVED_POSITION,
-                                              String.valueOf(strategy),
-                                              result,
-                                              inDate,
-                                              inSymbol),
-                               strategy);
+            SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                   "{} found position {} as of {} for {}", //$NON-NLS-1$
+                                   strategy,
+                                   result,
+                                   inDate,
+                                   inSymbol);
             return result;
         } catch (Exception e) {
-            StrategyModule.log(LogEvent.warn(CANNOT_RETRIEVE_POSITION,
-                                             e,
-                                             String.valueOf(strategy),
-                                             inSymbol,
-                                             inDate),
-                               strategy);
+            CANNOT_RETRIEVE_POSITION.warn(Strategy.STRATEGY_MESSAGES,
+                                          e,
+                                          strategy,
+                                          inSymbol,
+                                          inDate);
             return null;
         }
-    }
-    /**
-     * Emits the given debug message to the strategy log output.
-     *
-     * @param inMessage a <code>String</code> value
-     */
-    protected void debug(String inMessage)
-    {
-        if(inMessage == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_LOG,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        strategy.getOutboundServicesProvider().log(LogEvent.debug(MESSAGE_1P,
-                                                                  inMessage));
-    }
-    /**
-     * Emits the given info message to the strategy log output.
-     *
-     * @param inMessage a <code>String</code> value
-     */
-    protected void info(String inMessage)
-    {
-        if(inMessage == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_LOG,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        strategy.getOutboundServicesProvider().log(LogEvent.info(MESSAGE_1P,
-                                                                 inMessage));
-    }
-    /**
-     * Emits the given warn message to the strategy log output.
-     *
-     * @param inMessage a <code>String</code> value
-     */
-    protected void warn(String inMessage)
-    {
-        if(inMessage == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_LOG,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        strategy.getOutboundServicesProvider().log(LogEvent.warn(MESSAGE_1P,
-                                                                 inMessage));
-    }
-    /**
-     * Emits the given error message to the strategy log output.
-     *
-     * @param inMessage a <code>String</code> value
-     */
-    protected void error(String inMessage)
-    {
-        if(inMessage == null) {
-            StrategyModule.log(LogEvent.warn(INVALID_LOG,
-                                             String.valueOf(strategy)),
-                               strategy);
-            return;
-        }
-        strategy.getOutboundServicesProvider().log(LogEvent.error(MESSAGE_1P,
-                                                                  inMessage));
     }
     /**
      * Searches for an appropriate <code>ExecutionReport</code> suitable for
@@ -974,27 +835,27 @@ public abstract class AbstractRunningStrategy
     {
         // first, try to find an ExecutionReport for this order
         List<ExecutionReport> executionReports = inEntry.executionReports;
-        StrategyModule.log(LogEvent.debug(EXECUTION_REPORTS_FOUND,
-                                          String.valueOf(strategy),
-                                          executionReports.size(),
-                                          String.valueOf(inEntry)),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} found {} execution report(s) for {}", //$NON-NLS-1$
+                               strategy,
+                               executionReports.size(),
+                               inEntry);
         // get list iterator set to last element of the list
         ListIterator<ExecutionReport> iterator = executionReports.listIterator(executionReports.size());
         // traverse backwards until a usable execution report is found
         while(iterator.hasPrevious()) {
             ExecutionReport report = iterator.previous();
             if(Originator.Server.equals(report.getOriginator())) {
-                StrategyModule.log(LogEvent.debug(USING_EXECUTION_REPORT,
-                                                  String.valueOf(strategy),
-                                                  report),
-                                   strategy);
+                SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                       "{} found {} to create the cancel order", //$NON-NLS-1$
+                                       strategy,
+                                       report);
                 return report;
             }
         }
-        StrategyModule.log(LogEvent.debug(NO_EXECUTION_REPORT,
-                                          String.valueOf(strategy)),
-                           strategy);
+        SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                               "{} found no appropriate execution report to create the cancel order", //$NON-NLS-1$
+                               strategy);
         return null;
     }
     /**
@@ -1057,13 +918,9 @@ public abstract class AbstractRunningStrategy
             implements Runnable
     {
         /**
-         * the base strategy
-         */
-        private final Strategy strategy;
-        /**
          * the strategy which to call
          */
-        private final RunningStrategy runningStrategy;
+        private final RunningStrategy strategy;
         /**
          * the data payload to deliver, may be null
          */
@@ -1071,16 +928,13 @@ public abstract class AbstractRunningStrategy
         /**
          * Create a new Callback instance.
          *
-         * @param inRunningStrategy a <code>RunningStrategy</code> instance
-         * @param inStrategy a <code>Strategy</code> value containing the base strategy
+         * @param inStrategy a <code>RunningStrategy</code> instance
          * @param inData an <code>Object</code> value to deliver to the {@link RunningStrategy}
          *   or null
          */
-        private Callback(RunningStrategy inRunningStrategy,
-                         Strategy inStrategy,
+        private Callback(RunningStrategy inStrategy,
                          Object inData)
         {
-            runningStrategy = inRunningStrategy;
             strategy = inStrategy;
             data = inData;
         }
@@ -1090,17 +944,15 @@ public abstract class AbstractRunningStrategy
         @Override
         public void run()
         {
-            StrategyModule.log(LogEvent.debug(EXECUTING_CALLBACK,
-                                              String.valueOf(runningStrategy),
-                                              new Date()),
-                               strategy);
+            SLF4JLoggerProxy.debug(Strategy.STRATEGY_MESSAGES,
+                                   "Executing callback for {} at {}", //$NON-NLS-1$
+                                   strategy,
+                                   new Date());
             try {
-                runningStrategy.onCallback(data);
+                strategy.onCallback(data);
             } catch (Exception e) {
-                StrategyModule.log(LogEvent.warn(CALLBACK_ERROR,
-                                                 e,
-                                                 String.valueOf(strategy)),
-                                   strategy);
+                CALLBACK_ERROR.warn(Strategy.STRATEGY_MESSAGES,
+                                    strategy);
             }
         }
     }
@@ -1232,16 +1084,6 @@ public abstract class AbstractRunningStrategy
         {
             assert(inOrder.getOrderID() != null);
             underlyingOrder = inOrder;
-        }
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString()
-        {
-            return String.format("Order %s with execution reports: %s", //$NON-NLS-1$
-                                 underlyingOrder,
-                                 Arrays.toString(executionReports.toArray()));
         }
     }
 }

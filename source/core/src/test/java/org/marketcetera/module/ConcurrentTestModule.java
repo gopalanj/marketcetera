@@ -13,7 +13,7 @@ import java.util.Hashtable;
  *
  * @author anshul@marketcetera.com
  * @version $Id$
- * @since 1.1.0
+ * @since $Release$
  */
 @ClassVersion("$Id$")
 public class ConcurrentTestModule extends Module

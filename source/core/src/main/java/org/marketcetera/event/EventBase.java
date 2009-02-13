@@ -19,7 +19,6 @@ import org.marketcetera.core.ClassVersion;
 @ClassVersion("$Id$") //$NON-NLS-1$
 public abstract class EventBase implements TimestampCarrier, Serializable
 {
-    private static final long serialVersionUID = 1L;
     /**
      * unique identifier for this market event
      */

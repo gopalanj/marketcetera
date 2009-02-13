@@ -11,7 +11,7 @@ import java.util.concurrent.locks.Lock;
  *
  * @author anshul@marketcetera.com
  * @version $Id$
- * @since 1.1.0
+ * @since $Release$
  */
 @ClassVersion("$Id$")
 public class ConcurrentTestFactory extends ModuleFactory {

@@ -11,6 +11,7 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.client.brokers.BrokersStatus;
+import org.marketcetera.core.MSymbol;
 import org.marketcetera.event.MockEventTranslator;
 import org.marketcetera.photon.BrokerManager;
 import org.marketcetera.photon.Messages;
@@ -20,7 +21,6 @@ import org.marketcetera.photon.preferences.CustomOrderFieldPage;
 import org.marketcetera.quickfix.FIXMessageFactory;
 import org.marketcetera.quickfix.FIXVersion;
 import org.marketcetera.trade.BrokerID;
-import org.marketcetera.trade.MSymbol;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
 
 import quickfix.FieldNotFound;
