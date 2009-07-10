@@ -25,7 +25,6 @@ public class EnumObjectHolder
     private EnumObject[] mArray;
 
 
-    @SuppressWarnings("unused")
     private EnumObjectHolder() {}
 
     public EnumObjectHolder

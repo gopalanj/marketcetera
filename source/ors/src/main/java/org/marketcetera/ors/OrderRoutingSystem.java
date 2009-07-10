@@ -31,7 +31,6 @@ import org.marketcetera.util.spring.SpringUtils;
 import org.marketcetera.util.ws.stateful.Server;
 import org.marketcetera.util.ws.stateful.SessionManager;
 import org.quickfixj.jmx.JmxExporter;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 import quickfix.DefaultMessageFactory;
@@ -68,10 +67,7 @@ public class OrderRoutingSystem
 
     // INSTANCE DATA.
 
-    private final AbstractApplicationContext mContext;
     private final StandardAuthentication mAuth;
-    private final Brokers mBrokers;
-    private final QuickFIXApplication mQFApp;
 
 
     // CONSTRUCTORS.
@@ -114,12 +110,13 @@ public class OrderRoutingSystem
 
         // Read Spring configuration.
 
-        mContext=new FileSystemXmlApplicationContext
+        FileSystemXmlApplicationContext context=
+            new FileSystemXmlApplicationContext
             (new String[] {"file:"+CONF_DIR+ //$NON-NLS-1$
                            "server.xml"}, //$NON-NLS-1$
                 parentContext);
-        getApplicationContext().registerShutdownHook();
-        getApplicationContext().start();
+        context.registerShutdownHook();
+        context.start();
 
         // Create resource managers.
 
@@ -131,14 +128,13 @@ public class OrderRoutingSystem
         JmsManager jmsMgr=new JmsManager
             (cfg.getIncomingConnectionFactory(),
              cfg.getOutgoingConnectionFactory());
-        mBrokers=new Brokers(cfg.getBrokers(),historyServices);
-        Selector selector=new Selector(getBrokers(),cfg.getSelector());
+        Brokers brokers=new Brokers(cfg.getBrokers(),historyServices);
+        Selector selector=new Selector(brokers,cfg.getSelector());
         cfg.getIDFactory().init();
         LocalIDFactory localIdFactory=new LocalIDFactory(cfg.getIDFactory());
         localIdFactory.init();
+        ReplyPersister persister=new ReplyPersister(historyServices);
         UserManager userManager=new UserManager();
-        ReplyPersister persister=new ReplyPersister
-            (historyServices);
 
         // Set dictionary for all QuickFIX/J messages we generate.
 
@@ -160,7 +156,7 @@ public class OrderRoutingSystem
             (cfg.getServerHost(),cfg.getServerPort(),
              new DBAuthenticator(),sessionManager);
         server.publish
-            (new ServiceImpl(sessionManager,getBrokers(),
+            (new ServiceImpl(sessionManager,brokers,
                              cfg.getIDFactory(),historyServices),
              Service.class);
 
@@ -168,13 +164,12 @@ public class OrderRoutingSystem
 
         QuickFIXSender qSender=new QuickFIXSender();
         RequestHandler handler=new RequestHandler
-            (getBrokers(),selector,cfg.getAllowedOrders(),
+            (brokers,selector,cfg.getAllowedOrders(),
              persister,qSender,userManager,localIdFactory);
         jmsMgr.getIncomingJmsFactory().registerHandlerOEX
             (handler,Service.REQUEST_QUEUE,false);
-        mQFApp=new QuickFIXApplication
-            (getBrokers(),cfg.getSupportedMessages(),
-             persister,qSender,userManager,
+        QuickFIXApplication app=new QuickFIXApplication
+            (brokers,cfg.getSupportedMessages(),persister,qSender,userManager,
              jmsMgr.getOutgoingJmsFactory().createJmsTemplateX
              (Service.BROKER_STATUS_TOPIC,true),
              jmsMgr.getOutgoingJmsFactory().createJmsTemplateQ
@@ -182,9 +177,9 @@ public class OrderRoutingSystem
 
         // Initiate broker connections.
 
-        SpringSessionSettings settings=getBrokers().getSettings();
+        SpringSessionSettings settings=brokers.getSettings();
         SocketInitiator initiator=new SocketInitiator
-            (getQuickFIXApplication(),settings.getQMessageStoreFactory(),
+            (app,settings.getQMessageStoreFactory(),
              settings.getQSettings(),settings.getQLogFactory(),
              new DefaultMessageFactory());
         initiator.start();
@@ -194,7 +189,7 @@ public class OrderRoutingSystem
         MBeanServer mbeanServer=ManagementFactory.getPlatformMBeanServer();
         (new JmxExporter(mbeanServer)).export(initiator);
         mbeanServer.registerMBean
-            (new ORSAdmin(getBrokers(),qSender,localIdFactory,userManager),
+            (new ORSAdmin(brokers,qSender,localIdFactory,userManager),
              new ObjectName(JMX_NAME));
     }
 
@@ -224,47 +219,14 @@ public class OrderRoutingSystem
     }
 
     /**
-     * Returns the receiver's Spring application context.
-     *
-     * @return The context.
-     */
-
-    AbstractApplicationContext getApplicationContext()
-    {
-        return mContext;
-    }
-
-    /**
      * Returns the receiver's authentication system.
      *
      * @return The authentication system.
      */
 
-    StandardAuthentication getAuth()
+    public StandardAuthentication getAuth()
     {
         return mAuth;
-    }
-
-    /**
-     * Returns the receiver's brokers.
-     *
-     * @return The brokers.
-     */
-
-    Brokers getBrokers()
-    {
-        return mBrokers;
-    }
-
-    /**
-     * Returns the receiver's QuickFIX/J application.
-     *
-     * @return The application.
-     */
-
-    QuickFIXApplication getQuickFIXApplication()
-    {
-        return mQFApp;
     }
 
 
@@ -306,9 +268,7 @@ public class OrderRoutingSystem
         // Execute application.
 
         try {
-            OrderRoutingSystem ors=new OrderRoutingSystem(args);
-            Messages.APP_STARTED.info(LOGGER_CATEGORY);
-            ors.startWaitingForever();
+            (new OrderRoutingSystem(args)).startWaitingForever();
             Messages.APP_STOP_SUCCESS.info(LOGGER_CATEGORY);
         } catch (Throwable t) {
             Messages.APP_STOP_ERROR.error(LOGGER_CATEGORY,t);

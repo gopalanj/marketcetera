@@ -21,7 +21,7 @@ public class TopOfBookKey extends Key<MDTopOfBook> {
 	 * @param symbol
 	 *            the symbol
 	 */
-	public TopOfBookKey(final String symbol) {
+	public TopOfBookKey(String symbol) {
 		super(symbol);
 	}
 }

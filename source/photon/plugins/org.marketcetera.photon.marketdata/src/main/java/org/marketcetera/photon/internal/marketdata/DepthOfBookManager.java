@@ -53,16 +53,17 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 		 * @param marketDataExecutor
 		 *            an executor for long running module operations that <strong>must</strong>
 		 *            execute tasks sequentially
+		 * 
 		 */
 		@Inject
-		public FactoryImpl(final ModuleManager moduleManager,
-				@MarketDataExecutor final Executor marketDataExecutor) {
+		public FactoryImpl(ModuleManager moduleManager,
+				@MarketDataExecutor Executor marketDataExecutor) {
 			mModuleManager = moduleManager;
 			mMarketDataExecutor = marketDataExecutor;
 		}
 
 		@Override
-		public IDepthOfBookManager create(final Set<Capability> capabilities) {
+		public IDepthOfBookManager create(Set<Capability> capabilities) {
 			return new DepthOfBookManager(mModuleManager, capabilities, mMarketDataExecutor);
 		}
 	}
@@ -70,7 +71,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 	private final Map<MDDepthOfBookImpl, Map<Object, MDQuoteImpl>> mIdMap = new MapMaker()
 			.makeComputingMap(new Function<MDDepthOfBookImpl, Map<Object, MDQuoteImpl>>() {
 				@Override
-				public Map<Object, MDQuoteImpl> apply(final MDDepthOfBookImpl from) {
+				public Map<Object, MDQuoteImpl> apply(MDDepthOfBookImpl from) {
 					return new MapMaker().makeMap();
 				}
 			});
@@ -89,13 +90,13 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 	 * @throws IllegalArgumentException
 	 *             if moduleManager is null
 	 */
-	public DepthOfBookManager(final ModuleManager moduleManager,
-			final Set<Capability> requiredCapabilities, final Executor marketDataExecutor) {
+	public DepthOfBookManager(ModuleManager moduleManager, Set<Capability> requiredCapabilities,
+			Executor marketDataExecutor) {
 		super(moduleManager, requiredCapabilities, marketDataExecutor);
 	}
 
 	@Override
-	protected MDDepthOfBookImpl createItem(final DepthOfBookKey key) {
+	protected MDDepthOfBookImpl createItem(DepthOfBookKey key) {
 		assert key != null;
 		MDDepthOfBookImpl item = new MDDepthOfBookImpl();
 		item.setSymbol(key.getSymbol());
@@ -104,7 +105,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 	}
 
 	@Override
-	protected void resetItem(final DepthOfBookKey key, final MDDepthOfBookImpl item) {
+	protected void resetItem(DepthOfBookKey key, MDDepthOfBookImpl item) {
 		assert key != null;
 		assert item != null;
 		synchronized (item) {
@@ -129,7 +130,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 			}
 
 			@Override
-			public void receiveData(final Object inData) {
+			public void receiveData(Object inData) {
 				if (inData instanceof QuoteEvent) {
 					QuoteEvent data = (QuoteEvent) inData;
 					MSymbol msymbol = data.getSymbol();
@@ -144,8 +145,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 						} else if (data instanceof AskEvent) {
 							list = item.getAsks();
 						} else {
-							// a new type of QuoteEvent is really unexpected,
-							// but we can ignore it
+							// a new type of QuoteEvent is really unexpected, but we can ignore it
 							assert false : inData;
 							reportUnexpectedData(inData);
 							return;
@@ -196,7 +196,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 				}
 			}
 
-			private void removeFromMap(final Map<Object, MDQuoteImpl> map, final QuoteEvent data) {
+			private void removeFromMap(Map<Object, MDQuoteImpl> map, QuoteEvent data) {
 				if (isLevel2) {
 					// for level 2, the exchange is the key
 					map.remove(encodeLevel2(data));
@@ -205,15 +205,14 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 				}
 			}
 
-			private void updateItem(final QuoteEvent data, final MDQuoteImpl changed) {
+			private void updateItem(QuoteEvent data, MDQuoteImpl changed) {
 				changed.setSource(data.getExchange());
 				changed.setTime(data.getTimeMillis());
 				changed.setSize(data.getSize());
 				changed.setPrice(data.getPrice());
 			}
 
-			private void addToMap(final Map<Object, MDQuoteImpl> map, final QuoteEvent data,
-					final MDQuoteImpl toAdd) {
+			private void addToMap(Map<Object, MDQuoteImpl> map, QuoteEvent data, MDQuoteImpl toAdd) {
 				if (isLevel2) {
 					// for level 2, the exchange is the key
 					map.put(encodeLevel2(data), toAdd);
@@ -222,7 +221,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 				}
 			}
 
-			private MDQuoteImpl getFromMap(final Map<Object, MDQuoteImpl> map, final QuoteEvent data) {
+			private MDQuoteImpl getFromMap(Map<Object, MDQuoteImpl> map, QuoteEvent data) {
 				if (isLevel2) {
 					// for level 2, the exchange is the key
 					return map.get(encodeLevel2(data));
@@ -250,7 +249,7 @@ public class DepthOfBookManager extends DataFlowManager<MDDepthOfBookImpl, Depth
 	private static class QuoteEventToMDQuote implements Function<QuoteEvent, MDQuoteImpl> {
 
 		@Override
-		public MDQuoteImpl apply(final QuoteEvent from) {
+		public MDQuoteImpl apply(QuoteEvent from) {
 			MDQuoteImpl quote = new MDQuoteImpl();
 			quote.setSource(from.getExchange());
 			quote.setTime(from.getTimeMillis());

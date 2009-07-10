@@ -18,7 +18,6 @@ import org.marketcetera.client.jms.JmsManager;
 import org.marketcetera.client.jms.JmsUtils;
 import org.marketcetera.client.jms.ReceiveOnlyHandler;
 import org.marketcetera.client.jms.OrderEnvelope;
-import org.marketcetera.metrics.ThreadedMetric;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -314,11 +313,8 @@ class ClientImpl implements Client, javax.jms.ExceptionListener {
         {
             if (inReport instanceof ExecutionReport) {
                 notifyExecutionReport((ExecutionReport)inReport);
-            } else if (inReport instanceof OrderCancelReject) {
-                notifyCancelReject((OrderCancelReject)inReport);
             } else {
-                Messages.LOG_RECEIVED_FIX_REPORT.warn
-                    (this,ObjectUtils.toString(inReport));
+                notifyCancelReject((OrderCancelReject)inReport);
             }
         }
     }
@@ -651,10 +647,6 @@ class ClientImpl implements Client, javax.jms.ExceptionListener {
     }
 
     private void convertAndSend(Order inOrder) throws ConnectionException {
-        ThreadedMetric.event("client-OUT",  //$NON-NLS-1$ 
-                inOrder instanceof OrderBase
-                        ? ((OrderBase) inOrder).getOrderID()
-                        : null);
         failIfClosed();
         SLF4JLoggerProxy.debug(TRAFFIC, "Sending order:{}", inOrder);  //$NON-NLS-1$
         try {

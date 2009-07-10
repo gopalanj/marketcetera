@@ -23,14 +23,15 @@ import org.marketcetera.util.misc.ClassVersion;
  * @since 1.0.0
  */
 @ClassVersion("$Id$")
-class MarketDataReceiverModule extends Module implements DataReceiver, DataFlowRequester {
+class MarketDataReceiverModule extends Module implements DataReceiver,
+		DataFlowRequester {
 
 	private final IMarketDataSubscriber mSubscriber;
 
 	private DataFlowSupport mDataFlowSupport;
 
 	/**
-	 * Constructor. Should only be called from {@link MarketDataReceiverFactory} .
+	 * Constructor.  Should only be called from {@link MarketDataReceiverFactory}.
 	 * 
 	 * @param inURN
 	 *            instance URN for this module
@@ -39,8 +40,8 @@ class MarketDataReceiverModule extends Module implements DataReceiver, DataFlowR
 	 * @param subscriber
 	 *            subscriber that will process incoming market data
 	 */
-	MarketDataReceiverModule(final ModuleURN inURN, final IMarketDataSubscriber subscriber)
-			throws ModuleCreationException {
+	MarketDataReceiverModule(ModuleURN inURN,
+			IMarketDataSubscriber subscriber) throws ModuleCreationException {
 		super(inURN, false);
 		if (subscriber == null)
 			throw new ModuleCreationException(Messages.MARKET_DATA_RECEIVER_NO_SUBSCRIBER);
@@ -68,13 +69,13 @@ class MarketDataReceiverModule extends Module implements DataReceiver, DataFlowR
 	}
 
 	@Override
-	public void receiveData(final DataFlowID inFlowID, final Object inData)
+	public void receiveData(DataFlowID inFlowID, final Object inData)
 			throws UnsupportedDataTypeException, StopDataFlowException {
 		mSubscriber.receiveData(inData);
 	}
 
 	@Override
-	public void setFlowSupport(final DataFlowSupport inSupport) {
+	public void setFlowSupport(DataFlowSupport inSupport) {
 		mDataFlowSupport = inSupport;
 	}
 

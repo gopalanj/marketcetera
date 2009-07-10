@@ -46,7 +46,7 @@ public class NotificationConsoleControllerTest {
 		mMockNotificationManager = mock(INotificationManager.class);
 		mMockPlugin = mock(NotificationPlugin.class);
 		NotificationPlugin.setOverride(mMockPlugin);
-		when(mMockPlugin.getNotificationManager()).thenReturn(mMockNotificationManager);
+		stub(mMockPlugin.getNotificationManager()).toReturn(mMockNotificationManager);
 		mFixture = new NotificationConsoleController();
 	}
 	

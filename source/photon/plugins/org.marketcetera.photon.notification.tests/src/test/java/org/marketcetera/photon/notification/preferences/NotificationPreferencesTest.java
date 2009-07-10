@@ -27,7 +27,7 @@ public class NotificationPreferencesTest {
 	public void setUp() {
 		mockPreferenceStore = mock(IPreferenceStore.class);
 		mockPlugin = mock(NotificationPlugin.class);
-		when(mockPlugin.getPreferenceStore()).thenReturn(mockPreferenceStore);
+		stub(mockPlugin.getPreferenceStore()).toReturn(mockPreferenceStore);
 		NotificationPlugin.setOverride(mockPlugin);
 	}
 

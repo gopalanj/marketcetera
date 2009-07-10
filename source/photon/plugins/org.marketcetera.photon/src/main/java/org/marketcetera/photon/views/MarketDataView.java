@@ -56,7 +56,7 @@ import org.marketcetera.photon.Messages;
 import org.marketcetera.photon.PhotonPlugin;
 import org.marketcetera.photon.commons.ui.table.ColumnState;
 import org.marketcetera.photon.commons.ui.table.ChooseColumnsMenu.IColumnProvider;
-import org.marketcetera.photon.marketdata.IMarketDataManager;
+import org.marketcetera.photon.marketdata.MarketDataManager;
 import org.marketcetera.photon.model.marketdata.MDPackage;
 import org.marketcetera.photon.ui.TextContributionItem;
 import org.marketcetera.trade.MSymbol;
@@ -92,7 +92,7 @@ public final class MarketDataView extends ViewPart implements IMSymbolListener,
 
 	private TextContributionItem mSymbolEntryText;
 
-	private final IMarketDataManager mMarketDataManager = PhotonPlugin.getDefault().getMarketDataManager();
+	private final MarketDataManager mMarketDataManager = PhotonPlugin.getDefault().getMarketDataManager();
 	
 	private TableViewer mViewer;
 
@@ -308,9 +308,14 @@ public final class MarketDataView extends ViewPart implements IMSymbolListener,
 	}
 
 	private void remove(final MarketDataViewItem item) {
-		mItemMap.remove(item.getSymbol());
-		mItems.remove(item);
-		item.dispose();
+		busyRun(new Runnable() {
+			@Override
+			public void run() {
+				mItemMap.remove(item.getSymbol());
+				mItems.remove(item);
+				item.dispose();
+			}
+		});
 	}
 
 	@Override
@@ -500,7 +505,7 @@ public final class MarketDataView extends ViewPart implements IMSymbolListener,
 	 * @version $Id$
 	 * @since 1.0.0
 	 */
-	@ClassVersion("$Id$")
+	@ClassVersion("$Id$")//$NON-NLS-1$
 	public static final class DeleteCommandHandler extends AbstractHandler
 			implements IHandler {
 
@@ -511,18 +516,13 @@ public final class MarketDataView extends ViewPart implements IMSymbolListener,
 					.getCurrentSelectionChecked(event);
 			if (part instanceof MarketDataView
 					&& selection instanceof IStructuredSelection) {
-				final MarketDataView view = (MarketDataView) part;
-				final IStructuredSelection sselection = (IStructuredSelection) selection;
-				// this can take some time
-				view.busyRun(new Runnable() {
-					public void run() {
-						for (Object obj : sselection.toArray()) {
-							if (obj instanceof MarketDataViewItem) {
-								view.remove((MarketDataViewItem) obj);
-							}
-						}
+				MarketDataView view = (MarketDataView) part;
+				IStructuredSelection sselection = (IStructuredSelection) selection;
+				for (Object obj : sselection.toArray()) {
+					if (obj instanceof MarketDataViewItem) {
+						view.remove((MarketDataViewItem) obj);
 					}
-				});
+				}
 			}
 			return null;
 		}

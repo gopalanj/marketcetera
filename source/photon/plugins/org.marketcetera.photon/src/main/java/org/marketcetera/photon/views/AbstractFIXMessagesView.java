@@ -103,15 +103,13 @@ public abstract class AbstractFIXMessagesView
     public void setInput(TradeReportsHistory inHistory)
     {
         EventList<ReportHolder> list = getMessageList(inHistory);
-        // Get the write lock since it is needed for sorting (see PN-416)
-        Lock writeLock = list.getReadWriteLock().writeLock();
-        writeLock.lock();
-        try {
-            super.setInput(new FilterList<ReportHolder>(list,
-                    getFilterMatcherEditor()));
-        } finally {
-            writeLock.unlock();
-        }
+		Lock readLock = list.getReadWriteLock().readLock();
+		readLock.lock();
+		try {
+			super.setInput(new FilterList<ReportHolder>(list, getFilterMatcherEditor()));
+		} finally {
+			readLock.unlock();
+		}
     }   
     /* (non-Javadoc)
      * @see org.marketcetera.photon.views.MessagesViewBase#dispose()

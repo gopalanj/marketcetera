@@ -2,14 +2,11 @@ package org.marketcetera.ors;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.concurrent.Callable;
 import org.apache.commons.lang.ObjectUtils;
 import org.marketcetera.client.jms.OrderEnvelope;
 import org.marketcetera.client.jms.ReceiveOnlyHandler;
 import org.marketcetera.core.CoreException;
 import org.marketcetera.core.IDFactory;
-import org.marketcetera.metrics.ConditionsFactory;
-import org.marketcetera.metrics.ThreadedMetric;
 import org.marketcetera.ors.brokers.Broker;
 import org.marketcetera.ors.brokers.Brokers;
 import org.marketcetera.ors.brokers.Selector;
@@ -24,7 +21,6 @@ import org.marketcetera.trade.FIXOrder;
 import org.marketcetera.trade.MSymbol;
 import org.marketcetera.trade.MessageCreationException;
 import org.marketcetera.trade.Order;
-import org.marketcetera.trade.OrderBase;
 import org.marketcetera.trade.OrderCancel;
 import org.marketcetera.trade.OrderReplace;
 import org.marketcetera.trade.OrderSingle;
@@ -93,9 +89,6 @@ public class RequestHandler
         '\u0001';
     private static final char SOH_REPLACE=
         '|';
-    private static final Callable<Boolean> METRIC_CONDITION=
-        ConditionsFactory.createSamplingCondition
-        (100,"metc.metrics.ors.sampling.interval"); //$NON-NLS-1$
 
 
     // INSTANCE DATA.
@@ -410,10 +403,6 @@ public class RequestHandler
     public void receiveMessage
         (OrderEnvelope msgEnv)
     {
-        ThreadedMetric.begin
-            ((msgEnv.getOrder() instanceof OrderBase)
-             ?((OrderBase)msgEnv.getOrder()).getOrderID()
-             :null);
         Messages.RH_RECEIVED_MESSAGE.info(this,msgEnv);
         Order msg=null;
         UserID actorID=null;
@@ -525,7 +514,6 @@ public class RequestHandler
             } catch (SessionNotFound ex) {
                 throw new I18NException(ex,Messages.RH_UNAVAILABLE_BROKER);
             }
-            ThreadedMetric.event("orderSent"); //$NON-NLS-1$
 
             // Compose ACK execution report (with pending status).
 
@@ -561,25 +549,30 @@ public class RequestHandler
 
         // Convert reply to FIX Agnostic messsage.
 
-        ThreadedMetric.event("fetchPrincipals"); //$NON-NLS-1$
         Principals principals=getPersister().getPrincipals(qMsgReply);
-        TradeMessage reply;
+        TradeMessage reply=null;
         try {
             reply=FIXConverter.fromQMessage
                 (qMsgReply,Originator.Server,bID,
                  principals.getActorID(),principals.getViewerID());
+            if (reply==null) {
+                Messages.RH_REPORT_TYPE_UNSUPPORTED.warn(this,qMsgReply);
+            }
         } catch (MessageCreationException ex) {
             Messages.RH_REPORT_FAILED.error(this,ex,qMsgReply);
+        }
+
+        // If the reply could not be packaged in FIX Agnostic format,
+        // we are done (a warning/error has already been reported).
+
+        if (reply==null) {
             return;
         }
 
         // Persist and send reply.
         
-        ThreadedMetric.event("prePersist"); //$NON-NLS-1$
         getPersister().persistReply(reply);
         Messages.RH_SENDING_REPLY.info(this,reply);
-        ThreadedMetric.event("postPersist"); //$NON-NLS-1$
         getUserManager().convertAndSend(reply);
-        ThreadedMetric.end(METRIC_CONDITION);
 	}
 }

@@ -7,7 +7,6 @@ import org.marketcetera.util.test.TestCaseBase;
 
 import static org.junit.Assert.*;
 import static org.marketcetera.util.test.EqualityAssert.*;
-import static org.marketcetera.util.test.SerializableAssert.*;
 
 /**
  * @author tlerios@marketcetera.com
@@ -49,8 +48,6 @@ public class MarshalledLocaleTest
 
         assertEquality(m,copy,empty);
         assertEquality(empty,new MarshalledLocale(null));
-
-        assertSerializable(m);
 
         assertEquals(TEST_LOCALE.toString(),m.toString());
         assertEquals(StringUtils.EMPTY,empty.toString());

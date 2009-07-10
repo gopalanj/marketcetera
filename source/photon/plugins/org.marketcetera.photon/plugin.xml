@@ -143,8 +143,8 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="org.marketcetera.photon.application"
-            description="Marketcetera Photon 1.6.0 (Plugin)"
-            name="Photon 1.6.0">
+            description="Marketcetera Photon 1.5.0 (Plugin)"
+            name="Photon 1.5.0">
          <property
                name="preferenceCustomization"
                value="plugin_customization.ini"/>
@@ -162,7 +162,7 @@
                value="225,75,170,20"/>
          <property
                name="appName"
-               value="Photon 1.6.0">
+               value="Photon 1.5.0">
          </property>
          <property
                name="aboutImage"
@@ -170,7 +170,7 @@
          </property>
          <property
                name="aboutText"
-               value="Marketcetera Photon&#x0A;&#x0A;Version: 1.6.0&#x0A;Build: metc.build.number&#x0A;&#x0A;(c) Copyright Marketcetera Inc 2006-2009.  All rights reserved.&#x0A;Visit http://www.marketcetera.org">
+               value="Marketcetera Photon&#x0A;&#x0A;Version: 1.5.0&#x0A;Build: metc.build.number&#x0A;&#x0A;(c) Copyright Marketcetera Inc 2006-2009.  All rights reserved.&#x0A;Visit http://www.marketcetera.org">
          </property>
       </product>
    </extension>
@@ -197,7 +197,7 @@
       </command>
       <command
             categoryId="org.marketcetera.photon.commands"
-            defaultHandler="org.marketcetera.photon.ui.marketdata.ReconnectMarketData"
+            defaultHandler="org.marketcetera.photon.marketdata.ReconnectMarketData"
             description="%command.reconnectMarketData.description"
             id="org.marketcetera.photon.reconnectMarketData"
             name="%command.reconnectMarketData.name">
@@ -208,13 +208,6 @@
             description="%command.reconnectServer.description"
             id="org.marketcetera.photon.reconnectServer"
             name="%command.reconnectServer.name">
-      </command>
-      <command
-            categoryId="org.marketcetera.photon.commands"
-            defaultHandler="org.marketcetera.photon.commands.CreateEquityOrderFromQuote"
-            description="%commands.createEquityOrderFromQuote.description"
-            id="org.marketcetera.photon.createEquityOrderFromQuote"
-            name="%commands.createEquityOrderFromQuote.name">
       </command>
    </extension>
    <extension
@@ -337,7 +330,7 @@
 	            </class>
              </control>
              <control>
-                <class class="org.marketcetera.photon.ui.marketdata.MarketDataStatusIndicator">
+                <class class="org.marketcetera.photon.marketdata.MarketDataStatusIndicator">
                    <parameter name="overlay" value="icons/overlay/m-template.gif"/>
                 </class>
              </control>
@@ -345,40 +338,6 @@
                    class="org.marketcetera.photon.ui.ClockTrimWidget">
              </control>
           </toolbar>
-       </menuContribution>
-       <menuContribution
-             locationURI="popup:org.marketcetera.photon.marketdata.MarketDepthView.bidsPopup">
-          <command
-                commandId="org.marketcetera.photon.createEquityOrderFromQuote"
-                label="%marketDepthView.bidsPopup.sell.label"
-                style="push">
-             <visibleWhen
-                   checkEnabled="false">
-                <with
-                      variable="activeMenuSelection">
-                   <count
-                         value="1">
-                   </count>
-                </with>
-             </visibleWhen>
-          </command>
-       </menuContribution>
-       <menuContribution
-             locationURI="popup:org.marketcetera.photon.marketdata.MarketDepthView.asksPopup">
-          <command
-                commandId="org.marketcetera.photon.createEquityOrderFromQuote"
-                label="%marketDepthView.asksPopup.buy.label"
-                style="push">
-             <visibleWhen
-                   checkEnabled="false">
-                <with
-                      variable="activeMenuSelection">
-                   <count
-                         value="1">
-                   </count>
-                </with>
-             </visibleWhen>
-          </command>
        </menuContribution>
    </extension>
    <extension

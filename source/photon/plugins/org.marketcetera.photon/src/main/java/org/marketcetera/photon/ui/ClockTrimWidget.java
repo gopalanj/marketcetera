@@ -9,7 +9,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.marketcetera.core.ClassVersion;
 import org.marketcetera.core.ThreadLocalSimpleDateFormat;
 
@@ -22,7 +21,7 @@ import org.marketcetera.core.ThreadLocalSimpleDateFormat;
  */
 
 @ClassVersion("$Id$")
-public class ClockTrimWidget extends WorkbenchWindowControlContribution {
+public class ClockTrimWidget extends Workaround253082ContributionItem {
 	private Label clockValue;
 	private static final ThreadLocalSimpleDateFormat DATE_FORMAT_LOCAL = new ThreadLocalSimpleDateFormat(
 			"MMM d HH:mm:ss z"); //$NON-NLS-1$
@@ -30,12 +29,12 @@ public class ClockTrimWidget extends WorkbenchWindowControlContribution {
 	private TimerTask task;
 
 	@Override
-	public void dispose() {
+	public void doDispose() {
 		if (task != null) {
 			task.cancel();
 			task = null;
 		}
-		super.dispose();
+		super.doDispose();
 	}
 
 	@Override

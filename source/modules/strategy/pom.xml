@@ -18,7 +18,7 @@
   <parent>
     <groupId>org.marketcetera</groupId>
     <artifactId>modules</artifactId>
-    <version>1.6.0</version>
+    <version>1.5.0</version>
   </parent>
   <artifactId>strategy</artifactId>
   <packaging>jar</packaging>
@@ -91,6 +91,16 @@
         </configuration>
       </plugin>
 
+      <!--
+        - Configure Maven to provide a full classpath to the
+        - strategy java compiler.
+        -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useManifestOnlyJar>false</useManifestOnlyJar>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

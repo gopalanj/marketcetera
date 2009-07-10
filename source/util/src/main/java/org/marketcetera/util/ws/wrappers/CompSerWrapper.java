@@ -6,9 +6,8 @@ import org.marketcetera.util.misc.ClassVersion;
 /**
  * A dual-form wrapper for marshalling a comparable and serializable
  * object. The raw form is an object implementing {@link Serializable}
- * and {@link Comparable}, and the marshalled form is a byte
- * array.
- *
+ * and {@link Comparable}, and the marshalled form is a byte array.
+ * 
  * @author tlerios@marketcetera.com
  * @since 1.0.0
  * @version $Id$
@@ -22,11 +21,6 @@ public class CompSerWrapper<T extends Serializable &
     extends SerWrapper<T>
     implements Comparable<CompSerWrapper<T>>
 {
-
-    // CLASS DATA.
-
-    private static final long serialVersionUID=1L;
-
 
     // CONSTRUCTORS.
 
@@ -45,10 +39,10 @@ public class CompSerWrapper<T extends Serializable &
 
     /**
      * Creates a new wrapper. This empty constructor is intended for
-     * use by JAXB and Java serialization.
+     * use by JAXB.
      */
 
-    public CompSerWrapper() {}
+    protected CompSerWrapper() {}
 
 
     // Comparable.

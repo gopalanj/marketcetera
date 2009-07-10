@@ -27,7 +27,6 @@ public class LongHolder
     private Long[] mArray;
 
 
-    @SuppressWarnings("unused")
     private LongHolder() {}
 
     public LongHolder

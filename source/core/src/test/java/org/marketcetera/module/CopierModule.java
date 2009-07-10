@@ -10,7 +10,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 
 import org.marketcetera.util.misc.ClassVersion;
-import org.marketcetera.util.misc.NamedThreadFactory;
 
 /* $License$ */
 /**
@@ -76,8 +75,7 @@ public class CopierModule extends Module implements DataEmitter {
             f.cancel(true);
         }
     }
-    private final ExecutorService mService = Executors.newCachedThreadPool(
-            new NamedThreadFactory("TestCopierModule"));
+    private final ExecutorService mService = Executors.newCachedThreadPool();
     private final Map<RequestID, Future<?>> mRequestTable = new HashMap<RequestID, Future<?>>();
     /**
      * A special kind of request that indicates that the given payload should be delivered synchronously.

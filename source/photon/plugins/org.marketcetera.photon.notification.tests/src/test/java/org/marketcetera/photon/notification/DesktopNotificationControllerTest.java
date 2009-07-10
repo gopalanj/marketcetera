@@ -36,7 +36,7 @@ public class DesktopNotificationControllerTest {
 		mMockPlugin = mock(NotificationPlugin.class);
 		NotificationPlugin.setOverride(mMockPlugin);
 		mMockNotificationManager = mock(INotificationManager.class);
-		when(mMockPlugin.getNotificationManager()).thenReturn(mMockNotificationManager);
+		stub(mMockPlugin.getNotificationManager()).toReturn(mMockNotificationManager);
 		mMockJob = mock(AbstractNotificationJob.class);
 		mFixture = new DesktopNotificationController() {
 			@Override
@@ -54,11 +54,11 @@ public class DesktopNotificationControllerTest {
 	@Test
 	public void testIsInteresting() {
 		assertFalse(mFixture.isInteresting(new Object()));
-		when(mMockPlugin.shouldDisplayPopup((Severity) anyObject())).thenReturn(true);
+		stub(mMockPlugin.shouldDisplayPopup((Severity) anyObject())).toReturn(true);
 		assertTrue(mFixture.isInteresting(NotificationUtil.createNotification(Severity.HIGH)));
 		assertTrue(mFixture.isInteresting(NotificationUtil.createNotification(Severity.MEDIUM)));
 		assertTrue(mFixture.isInteresting(NotificationUtil.createNotification(Severity.LOW)));
-		when(mMockPlugin.shouldDisplayPopup((Severity) anyObject())).thenReturn(false);
+		stub(mMockPlugin.shouldDisplayPopup((Severity) anyObject())).toReturn(false);
 		assertFalse(mFixture.isInteresting(NotificationUtil.createNotification(Severity.HIGH)));
 		assertFalse(mFixture.isInteresting(NotificationUtil.createNotification(Severity.MEDIUM)));
 		assertFalse(mFixture.isInteresting(NotificationUtil.createNotification(Severity.LOW)));

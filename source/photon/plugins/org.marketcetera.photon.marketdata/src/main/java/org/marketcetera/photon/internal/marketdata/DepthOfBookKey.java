@@ -38,7 +38,7 @@ public class DepthOfBookKey extends Key<MDDepthOfBook> {
 	 * @throws IllegalArgumentException
 	 *             if the product is not one of the available products listed above
 	 */
-	public DepthOfBookKey(final String symbol, final Content product) {
+	public DepthOfBookKey(String symbol, Content product) {
 		super(symbol);
 		Validate.notNull(product);
 		Validate.isTrue(VALID_PRODUCTS.contains(product));
@@ -55,14 +55,13 @@ public class DepthOfBookKey extends Key<MDDepthOfBook> {
 	}
 
 	@Override
-	protected void enhanceHashCode(final HashCodeBuilder builder) {
+	protected void enhanceHashCode(HashCodeBuilder builder) {
 		builder.append(mProduct);
 	}
 
 	@Override
-	protected void refineEquals(final EqualsBuilder builder, final Key<?> otherKey) {
-		// super class guarantees this so we can safely cast to DepthOfBookKey
-		// below
+	protected void refineEquals(EqualsBuilder builder, Key<?> otherKey) {
+		// super class guarantees this so we can safely cast to DepthOfBookKey below
 		assert getClass() == otherKey.getClass();
 		builder.append(mProduct, ((DepthOfBookKey) otherKey).mProduct);
 	}

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Photon Plug-in
 Bundle-SymbolicName: org.marketcetera.photon; singleton:=true
-Bundle-Version: 1.6.0
+Bundle-Version: 1.5.0
 Bundle-Activator: org.marketcetera.photon.PhotonPlugin
 Bundle-Vendor: Marketcetera, Inc.
 Bundle-Localization: plugin
@@ -46,11 +46,11 @@ Require-Bundle: org.eclipse.core.commands;visibility:=reexport,
 Export-Package: org.marketcetera.photon,
  org.marketcetera.photon.actions,
  org.marketcetera.photon.commands,
+ org.marketcetera.photon.marketdata,
  org.marketcetera.photon.parser,
  org.marketcetera.photon.preferences,
  org.marketcetera.photon.ui,
  org.marketcetera.photon.ui.databinding,
- org.marketcetera.photon.ui.marketdata,
  org.marketcetera.photon.ui.validation,
  org.marketcetera.photon.ui.validation.fix,
  org.marketcetera.photon.views,

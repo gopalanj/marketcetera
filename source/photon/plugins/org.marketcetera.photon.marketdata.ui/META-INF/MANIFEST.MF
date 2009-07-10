@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundleName
 Bundle-SymbolicName: org.marketcetera.photon.marketdata.ui; singleton:=true
-Bundle-Version: 1.6.0
+Bundle-Version: 1.5.0
 Bundle-Vendor: %bundleVendor
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -20,4 +20,3 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.marketcetera.photon.marketdata.ui
-Bundle-Activator: org.marketcetera.photon.internal.marketdata.ui.Activator

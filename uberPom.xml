@@ -17,7 +17,7 @@
 
   <groupId>org.marketcetera</groupId>
   <artifactId>declarations</artifactId>
-  <version>1.6.0</version>
+  <version>1.5.0</version>
   <packaging>pom</packaging>
 
   <name>Declarations</name>
@@ -31,7 +31,7 @@
     <mvn.cxf.version>2.1.2</mvn.cxf.version>
     <!-- Match version used by org.apache.cxf.cxf-rt-frontend-jaxws. -->
     <mvn.xjc.version>2.1.7</mvn.xjc.version>
-    <mvn.eclipse.version>3.5</mvn.eclipse.version>
+    <mvn.eclipse.version>3.4.1</mvn.eclipse.version>
   </properties>
 
   <dependencyManagement>
@@ -212,9 +212,9 @@
         <version>[1.1.3]</version>
       </dependency>
       <dependency>
-        <groupId>com.espertech</groupId>
+        <groupId>esper</groupId>
         <artifactId>esper</artifactId>
-        <version>[3.1.0]</version>
+        <version>[2.3.0]</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
@@ -229,7 +229,7 @@
       <dependency>
         <groupId>com.google.collections</groupId>
         <artifactId>google-collections</artifactId>
-        <version>[1.0-rc2]</version>
+        <version>[1.0-rc1]</version>
       </dependency>
       <dependency>
         <groupId>com.google</groupId>
@@ -241,11 +241,6 @@
         <groupId>com.google</groupId>
         <artifactId>guice-source</artifactId>
         <version>[20090205]</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.code.findbugs</groupId>
-        <artifactId>jsr305</artifactId>
-        <version>[1.3.8]</version>
       </dependency>
 
       <!-- Runtime. -->
@@ -441,14 +436,8 @@
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>[1.8.0-rc2]</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.objenesis</groupId>
-        <artifactId>objenesis</artifactId>
-        <version>[1.0]</version>
+        <artifactId>mockito-all</artifactId>
+        <version>[1.5]</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -664,7 +653,7 @@
      -  workaround was to search central ahead of internal. This odd
      -  behaviour stopped at some point, prob. due to the order of
      -  artifact resolution, and then another problem came up where
-     -  esper would have its pom located in the central repo, but then
+     -  esper would have its pom located in the public repo, but then
      -  its jar would be downloaded from the internal repo (where an
      -  an older version of esper resided, but not the sought-after
      -  jar). So builds failed again. That was when the central repo
@@ -683,13 +672,6 @@
      -    </snapshots>
      -  </repository>
      -->
-    <repository>
-      <id>findbugs.googlecode.com</id>
-      <url>http://findbugs.googlecode.com/svn/repos/release-repository</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
     <repository>
       <id>central</id>
       <url>http://repo1.maven.org/maven2</url>

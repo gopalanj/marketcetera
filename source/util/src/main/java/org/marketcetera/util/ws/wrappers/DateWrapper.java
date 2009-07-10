@@ -22,11 +22,6 @@ public class DateWrapper
     implements Comparable<DateWrapper>
 {
 
-    // CLASS DATA.
-
-    private static final long serialVersionUID=1L;
-
-
     // CONSTRUCTORS.
 
     /**
@@ -43,10 +38,10 @@ public class DateWrapper
 
     /**
      * Creates a new wrapper. This empty constructor is intended for
-     * use by JAXB and Java serialization.
+     * use by JAXB.
      */
 
-    public DateWrapper() {}
+    protected DateWrapper() {}
 
 
     // DualWrapper.

@@ -657,13 +657,15 @@ public final class FIXConverter
      * @param brokerID The ID of the broker which generated
      * the QuickFIX/J message. It may be null.
      * @param actorID The ID of the actor user of this QuickFIX/J
-     * message. It may be null.
+     * message.
      * @param viewerID The ID of the viewer user of this QuickFIX/J
-     * message. It may be null.
+     * message.
      *
-     * @return The FIX Agnostic message.
+     * @return The FIX Agnostic message. It is null if conversion is
+     * not available for the QuickFIX/J message type.
      *
-     * @throws MessageCreationException Thrown if conversion fails.
+     * @throws MessageCreationException Thrown if conversion is
+     * available for the QuickFIX/J message type, but it fails.
      */
 
     public static TradeMessage fromQMessage
@@ -682,8 +684,7 @@ public final class FIXConverter
             return Factory.getInstance().createOrderCancelReject
                 (msg,brokerID,originator,actorID,viewerID);
         }
-        return Factory.getInstance().createFIXResponse
-            (msg,brokerID,originator,actorID,viewerID);
+        return null;
     }
 
 

@@ -18,7 +18,6 @@ import javax.management.NotificationListener;
 import org.marketcetera.core.CoreException;
 import org.marketcetera.core.IFeedComponentListener;
 import org.marketcetera.core.LockHelper;
-import org.marketcetera.metrics.ThreadedMetric;
 import org.marketcetera.core.publisher.ISubscriber;
 import org.marketcetera.event.EventBase;
 import org.marketcetera.module.DataEmitter;
@@ -44,17 +43,6 @@ import com.google.common.collect.HashBiMap;
  * 
  * <p>Market data providers wishing to expose a strategy agent emitter interface
  * may extend this class.
- * <p>
- * Module Features
- * <table>
- * <tr><th>Capabilities</th><td>Data Emitter</td></tr>
- * <tr><th>Stops data flows</th><td>No</td></tr>
- * <tr><th>Start Operation</th><td>Starts the feed, logs into it.</td></tr>
- * <tr><th>Stop Operation</th><td>Stops the data feed.</td></tr>
- * <tr><th>Management Interface</th><td>{@link AbstractMarketDataModuleMXBean}</td></tr>
- * <tr><th>MX Notification</th><td>{@link AttributeChangeNotification}
- * whenever {@link #getFeedStatus()} changes. </td></tr>
- * </table>
  *
  * @author <a href="mailto:colin@marketcetera.com">Colin DuPlantis</a>
  * @version $Id$
@@ -165,7 +153,6 @@ public abstract class AbstractMarketDataModule<T extends MarketDataFeedToken,
                             }
                         });
                     }
-                    ThreadedMetric.event("mdata-OUT");  //$NON-NLS-1$
                     inSupport.send(inEvent);
                 }
             };

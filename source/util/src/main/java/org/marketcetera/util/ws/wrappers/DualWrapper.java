@@ -1,40 +1,15 @@
 package org.marketcetera.util.ws.wrappers;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlTransient;
 import org.marketcetera.util.misc.ClassVersion;
 
 /**
- * A dual-form wrapper for marshalling a data value via JAXB or
- * regular Java serialization. One of the two forms is a raw one,
- * namely the standard class used to represent that value in Java; the
- * other is a type that can be marshalled via JAXB or Java
- * serialization. The raw form is null if and only if the marshalled
- * one is null.
- *
- * <p>It is essential to note that the wrapper always maintains this
- * invariant: the raw and marshalled forms represent the same object
- * at all times. A consequence of this invariant is that the wrapper
- * should not be considered an alternate storage container for objects
- * server-side: if an object cannot be converted to its marshalled
- * form (e.g. Java serialization fails for {@link SerWrapper}), then
- * the wrapper will refuse to store that object and will set both the
- * raw and marshalled forms to null. The wrapper will still get
- * created and remote these null values to the client, but, on the
- * server-side, the wrapper will not have retained the raw form.</p>
+ * A dual-form wrapper for marshalling a data value via JAXB. One of
+ * the two forms is a raw one, namely the standard class used to
+ * represent that value in Java; the other is a type that can be
+ * marshalled via JAXB. The raw form is null if and only if the
+ * marshalled one is null.
  * 
- * <p>The <code>M</code> type parameter should implement {@link
- * Serializable}, and subclasses of this class need to have a public
- * empty constructor if this wrapper (or its subclasses) is to be used
- * for Java Serialization. The former constraint is not enforced by
- * the class because, if this wrapper is only used for JAXB
- * marshalling, <code>M</code> need not implement {@link Serializable}
- * (and the empty constructor's visibility can be more limited).</p>
- *
  * @author tlerios@marketcetera.com
  * @since 1.0.0
  * @version $Id$
@@ -45,13 +20,7 @@ import org.marketcetera.util.misc.ClassVersion;
 @ClassVersion("$Id$")
 public abstract class DualWrapper<R,M>
     extends BaseWrapper<R>
-    implements Externalizable
 {
-
-    // CLASS DATA.
-
-    private static final long serialVersionUID=1L;
-
 
     // INSTANCE DATA.
 
@@ -75,31 +44,10 @@ public abstract class DualWrapper<R,M>
 
     /**
      * Creates a new wrapper. This empty constructor is intended for
-     * use by JAXB and Java serialization.
+     * use by JAXB.
      */
 
     protected DualWrapper() {}
-
-
-    // Externalizable.
-
-    @Override
-    public void writeExternal
-        (ObjectOutput out)
-        throws IOException
-    {
-        out.writeObject(getMarshalled());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void readExternal
-        (ObjectInput in)
-        throws IOException,
-               ClassNotFoundException
-    {
-        setMarshalled((M)in.readObject());
-    }
 
 
     // INSTANCE METHODS.
@@ -205,11 +153,11 @@ public abstract class DualWrapper<R,M>
      * can assume that the latter form is non-null.  The subclass may
      * modify both the former and latter forms (for example, if the
      * latter form is invalid). Only {@link #setRawOnly(Object)} and
-     * {@link #setMarshalledOnly(Object)} should be used in
-     * setting either form, to prevent infinite recursion. The raw
-     * form is null if and only if the marshalled one is null; the
-     * caller of this method will enforce this invariant, so the
-     * subclass implementation can set just the raw form to null.
+     * {@link #setMarshalledOnly(Object)} should be used in setting
+     * either form, to prevent infinite recursion. The raw form is
+     * null if and only if the marshalled one is null; the caller of
+     * this method will enforce this invariant, so the subclass
+     * implementation can set just the raw form to null.
      */
 
     protected abstract void toRaw();

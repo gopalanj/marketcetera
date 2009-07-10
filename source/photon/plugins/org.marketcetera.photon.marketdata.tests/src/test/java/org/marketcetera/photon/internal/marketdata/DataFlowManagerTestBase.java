@@ -1,7 +1,7 @@
 package org.marketcetera.photon.internal.marketdata;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.stub;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -16,12 +16,12 @@ import org.marketcetera.core.ImmediateExecutorService;
 import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
 import org.marketcetera.marketdata.Capability;
-import org.marketcetera.marketdata.FeedStatus;
 import org.marketcetera.marketdata.MarketDataRequest;
 import org.marketcetera.module.ExpectedFailure;
 import org.marketcetera.module.ModuleManager;
 import org.marketcetera.module.ModuleURN;
 import org.marketcetera.photon.marketdata.IMarketDataFeed;
+import org.marketcetera.photon.marketdata.MarketDataManager;
 import org.marketcetera.photon.marketdata.MockMarketDataModuleFactory;
 import org.marketcetera.photon.marketdata.MockMarketDataModuleFactory.MockMarketDataModule;
 import org.marketcetera.photon.model.marketdata.MDItem;
@@ -110,13 +110,10 @@ public abstract class DataFlowManagerTestBase<T extends MDItem, K extends Key<T>
 
 	@Before
 	public void before() throws Exception {
+		MarketDataManager.getCurrent().reconnectFeed(
+				MockMarketDataModuleFactory.PROVIDER_URN.toString());
 		mMockMarketDataModule = MockMarketDataModuleFactory.sInstance;
 		mMockMarketDataModule.setStatus("AVAILABLE");
-		Activator.getMarketDataManager().reconnectFeed(
-				MockMarketDataModuleFactory.PROVIDER_URN.toString());
-		while (Activator.getMarketDataManager().getActiveFeedStatus() != FeedStatus.AVAILABLE) {
-			Thread.sleep(250);
-		}
 		mFixture = createFixture(ModuleSupport.getModuleManager(), new ImmediateExecutorService());
 		mMockModuleFeed = createMockModuleFeed(getSupportedCapabilities());
 		mFixture.setSourceFeed(mMockModuleFeed);
@@ -135,8 +132,8 @@ public abstract class DataFlowManagerTestBase<T extends MDItem, K extends Key<T>
 
 	private IMarketDataFeed createMockFeed(ModuleURN urn, EnumSet<Capability> capabilities) throws I18NException {
 		IMarketDataFeed mock = mock(IMarketDataFeed.class);
-		when(mock.getURN()).thenReturn(urn);
-		when(mock.getCapabilities()).thenReturn(capabilities);
+		stub(mock.getURN()).toReturn(urn);
+		stub(mock.getCapabilities()).toReturn(capabilities);
 		return mock;
 	}
 

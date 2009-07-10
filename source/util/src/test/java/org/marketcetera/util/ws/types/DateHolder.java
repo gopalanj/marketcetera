@@ -35,7 +35,6 @@ public class DateHolder
     private TreeMap<Date,Date> mTreeMap;
 
 
-    @SuppressWarnings("unused")
     private DateHolder() {}
 
     public DateHolder

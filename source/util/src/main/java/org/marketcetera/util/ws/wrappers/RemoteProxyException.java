@@ -39,10 +39,9 @@ public class RemoteProxyException
      * Creates a new client-side representation of a server exception,
      * whose marshalled information is given.
      *
-     * @param message The server-localized message, which may be null.
-     * @param traceCapture The stack trace capture, which may be null.
-     * @param serverString The server string representation, which may
-     * be null.
+     * @param message The server-localized message.
+     * @param traceCapture The stack trace capture.
+     * @param serverString The server string representation.
      */
 
     public RemoteProxyException
@@ -61,7 +60,7 @@ public class RemoteProxyException
     /**
      * Returns the receiver's stack trace capture.
      *
-     * @return The capture, which may be null.
+     * @return The capture.
      */
 
     public String[] getTraceCapture()
@@ -75,9 +74,6 @@ public class RemoteProxyException
     @Override
     public void printStackTrace()
     {
-        if (getTraceCapture()==null) {
-            return;
-        }
         for (String frame:getTraceCapture()) {
             System.err.println(frame);
         }
@@ -87,9 +83,6 @@ public class RemoteProxyException
     public void printStackTrace
         (PrintStream s)
     {
-        if (getTraceCapture()==null) {
-            return;
-        }
         for (String frame:getTraceCapture()) {
             s.println(frame);
         }
@@ -99,9 +92,6 @@ public class RemoteProxyException
     public void printStackTrace
         (PrintWriter s)
     {
-        if (getTraceCapture()==null) {
-            return;
-        }
         for (String frame:getTraceCapture()) {
             s.println(frame);
         }

@@ -38,7 +38,7 @@ public class ModuleTestBase {
      * @param inProviders the actual set of provider URNs found.
      */
     protected static void checkAllProviders(List<ModuleURN> inProviders) {
-        assertEquals(13, inProviders.size());
+        assertEquals(12, inProviders.size());
         CollectionAssert.assertArrayPermutation(new ModuleURN[]{
                 SinkModuleFactory.PROVIDER_URN,
                 SingleModuleFactory.PROVIDER_URN,
@@ -51,8 +51,7 @@ public class ModuleTestBase {
                 FlowRequesterModuleFactory.PROVIDER_URN,
                 SingleParmModuleFactory.PROVIDER_URN,
                 CopierModuleFactory.PROVIDER_URN,
-                ConcurrentTestFactory.PROVIDER_URN,
-                DynamicBeanModuleFactory.PROVIDER_URN
+                ConcurrentTestFactory.PROVIDER_URN
         }, inProviders.toArray(new ModuleURN[inProviders.size()]));
     }
 

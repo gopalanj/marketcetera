@@ -4,7 +4,6 @@ import com.espertech.esper.client.*;
 import com.espertech.esper.client.time.CurrentTimeEvent;
 import com.espertech.esper.client.time.TimerControlEvent;
 import org.marketcetera.core.Pair;
-import org.marketcetera.metrics.ThreadedMetric;
 import org.marketcetera.event.TimestampCarrier;
 import org.marketcetera.module.*;
 import org.marketcetera.modules.cep.system.CEPDataTypes;
@@ -46,17 +45,6 @@ import java.util.*;
  * query statements after it receives the first {@link TimestampCarrier}.
  * Any non-<code>TimestampCarrier</code> received prior to that are
  * reported and ignored.
- * <p>
- * Module Features
- * <table>
- * <tr><th>Capabilities</th><td>Data Emitter, Data Receiver</td></tr>
- * <tr><th>DataFlow Request Parameters</th><td><code>String</code>: CEP query; <code>String[]</code>: Multiple CEP queries</td></tr>
- * <tr><th>Stops data flows</th><td>If it encounters an error when creating statements in external time mode.</td></tr>
- * <tr><th>Start Operation</th><td>Initializes Esper Runtime</td></tr>
- * <tr><th>Stop Operation</th><td>Destroys Esper Runtime</td></tr>
- * <tr><th>Management Interface</th><td>{@link CEPEsperProcessorMXBean}</td></tr>
- * <tr><th>Factory</th><td>{@link CEPEsperFactory}</td></tr>
- * </table>
  *
  * @author anshul@marketcetera.com
  * @author toli@marketcetera.com
@@ -123,7 +111,6 @@ public class CEPEsperProcessor extends Module
     @Override
     public void receiveData(DataFlowID inFlowID, Object inData)
             throws UnsupportedDataTypeException, StopDataFlowException {
-        ThreadedMetric.event("cep-IN");  //$NON-NLS-1$
         if(inData != null) {
             getDelegate().preProcessData(inFlowID, inData);
             int selfPostedCounter = mSelfPostingEvents.get();
@@ -180,7 +167,7 @@ public class CEPEsperProcessor extends Module
     @Override
     public long getNumEventsReceived() {
         if(getState().isStarted()) {
-            return mService.getEPRuntime().getNumEventsEvaluated();
+            return mService.getEPRuntime().getNumEventsReceived();
         }
         throw new IllegalStateException(Messages.ERROR_MODULE_NOT_STARTED.getText());
     }
@@ -231,12 +218,12 @@ public class CEPEsperProcessor extends Module
 
             for (Pair<String, Class<?>> stringClassPair : CEPDataTypes.REQUEST_PRECANNED_TYPES) {
                 if (stringClassPair.getFirstMember().equals(CEPDataTypes.MAP)) {
-                    configuration.addEventType(CEPDataTypes.MAP, new Properties());
+                    configuration.addEventTypeAlias(CEPDataTypes.MAP, new Properties());
                 } else {
-                    configuration.addEventType(stringClassPair.getFirstMember(), stringClassPair.getSecondMember());
+                    configuration.addEventTypeAlias(stringClassPair.getFirstMember(), stringClassPair.getSecondMember());
                 }
             }
-            configuration.addEventType(CEPDataTypes.TIME_CARRIER, TimestampCarrier.class);
+            configuration.addEventTypeAlias(CEPDataTypes.TIME_CARRIER, TimestampCarrier.class);
 
             mService = EPServiceProviderManager.getProvider(
                     getURN().instanceName(), configuration);
@@ -443,7 +430,6 @@ public class CEPEsperProcessor extends Module
          * @param inMap the map of values containing results of the statement.
          */
         public void update(Map inMap) {
-            ThreadedMetric.event("cep-OUT");  //$NON-NLS-1$
             if(inMap != null && inMap.size() == 1) {
                 mSupport.send(inMap.values().iterator().next());
             } else {

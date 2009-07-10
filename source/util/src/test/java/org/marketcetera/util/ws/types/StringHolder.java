@@ -25,7 +25,6 @@ public class StringHolder
     private String[] mArray;
 
 
-    @SuppressWarnings("unused")
     private StringHolder() {}
 
     public StringHolder

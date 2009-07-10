@@ -14,7 +14,6 @@ import org.marketcetera.core.position.MarketDataSupport.SymbolChangeEvent;
 import org.marketcetera.core.position.MarketDataSupport.SymbolChangeListener;
 import org.marketcetera.core.position.MarketDataSupport.SymbolChangeListenerBase;
 import org.marketcetera.util.misc.ClassVersion;
-import org.marketcetera.util.misc.NamedThreadFactory;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.event.ListEvent;
@@ -38,7 +37,7 @@ public final class PositionRowUpdater {
     private final MarketDataSupport mMarketDataSupport;
     private final SymbolChangeListener mSymbolChangeListener;
     private static final ExecutorService sMarketDataUpdateExecutor = Executors
-            .newSingleThreadExecutor(new NamedThreadFactory("PositionRowUpdater"));  //$NON-NLS-1$
+            .newSingleThreadExecutor();
     private final AtomicBoolean mTickPending = new AtomicBoolean();
     private final AtomicBoolean mClosingPricePending = new AtomicBoolean();
     private volatile PositionMetricsCalculator mCalculator;

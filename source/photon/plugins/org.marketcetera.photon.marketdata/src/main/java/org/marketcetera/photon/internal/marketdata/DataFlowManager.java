@@ -4,6 +4,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -25,9 +27,7 @@ import org.marketcetera.util.except.ExceptUtils;
 import org.marketcetera.util.misc.ClassVersion;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Sets;
 import com.google.inject.BindingAnnotation;
 
 /* $License$ */
@@ -35,19 +35,12 @@ import com.google.inject.BindingAnnotation;
 /**
  * Base class for data flow managers. This class handles the interactions with the
  * {@link ModuleManager} and implements all the methods required by the IDataFlowManager interface.
- * <p>
+ * 
  * Subclasses must implement abstract methods to create concrete data items and to update them when
  * data arrives.
- * <p>
- * Long running market data operations are queued in a separate thread using an Executor. This means
- * that there may be a delay between the time, say, {@link #startFlow(Key)} is called and when the
- * associated MDItem starts getting data.
  * 
  * @see IDataFlowManager
- * @param <T>
- *            the model object type being managed
- * @param <K>
- *            the request key being managed
+ * 
  * @author <a href="mailto:will@marketcetera.com">Will Horn</a>
  * @version $Id$
  * @since 1.5.0
@@ -60,20 +53,19 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 	 * Identifies the {@link Executor} used by this class for Guice binding.
 	 */
 	@Retention(RetentionPolicy.RUNTIME)
-	@Target( { ElementType.PARAMETER })
+	@Target({ElementType.PARAMETER})
 	@BindingAnnotation
-	@interface MarketDataExecutor {
-	}
-
+	@interface MarketDataExecutor {}
+	
 	private final ModuleManager mModuleManager;
 	private final Map<K, ModuleURN> mSubscribers = new HashMap<K, ModuleURN>();
 	private final Map<K, T> mItems = new MapMaker().makeComputingMap(new Function<K, T>() {
 		@Override
-		public T apply(final K from) {
+		public T apply(K from) {
 			return createItem(from);
 		}
 	});
-	private final ImmutableSet<Capability> mRequiredCapabilities;
+	private final Set<Capability> mRequiredCapabilities;
 	private final Executor mMarketDataExecutor;
 	private ModuleURN mSourceModule;
 
@@ -90,22 +82,24 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 	 * @throws IllegalArgumentException
 	 *             if either parameter is null, or if requiredCapabilities is empty
 	 */
-	protected DataFlowManager(final ModuleManager moduleManager, final Set<Capability> requiredCapabilities,
-			final Executor marketDataExecutor) {
+	protected DataFlowManager(ModuleManager moduleManager, Set<Capability> requiredCapabilities,
+			Executor marketDataExecutor) {
 		Validate.noNullElements(new Object[] { moduleManager, requiredCapabilities });
 		mModuleManager = moduleManager;
-		mRequiredCapabilities = Sets.immutableEnumSet(requiredCapabilities);
+		// would like Sets.immutableEnumSet(requiredCapabilities) which may be in google
+		// collections someday
+		mRequiredCapabilities = Collections.unmodifiableSet(EnumSet.copyOf(requiredCapabilities));
 		mMarketDataExecutor = marketDataExecutor;
 	}
 
 	@Override
-	public final T getItem(final K key) {
+	public final T getItem(K key) {
 		Validate.notNull(key);
 		return mItems.get(key);
 	}
 
 	@Override
-	public final synchronized void setSourceFeed(final IMarketDataFeed feed) {
+	public final synchronized void setSourceFeed(IMarketDataFeed feed) {
 		// this method restarts all modules even if the feed has not changed,
 		// in case anything went wrong the previous time
 		ModuleURN module = feed == null ? null : feed.getURN();
@@ -135,7 +129,6 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 	private void startModule(final ModuleURN module) {
 		assert module != null;
 		mMarketDataExecutor.execute(new ReportingRunnable() {
-			@Override
 			public void doRun() throws Exception {
 				if (!mModuleManager.getModuleInfo(module).getState().isStarted()) {
 					mModuleManager.start(module);
@@ -147,7 +140,6 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 	private void stopModule(final ModuleURN module, final boolean delete) {
 		assert module != null;
 		mMarketDataExecutor.execute(new ReportingRunnable() {
-			@Override
 			public void doRun() throws Exception {
 				if (mModuleManager.getModuleInfo(module).getState().isStarted()) {
 					mModuleManager.stop(module);
@@ -172,7 +164,7 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 	}
 
 	@Override
-	public final synchronized void startFlow(final K key) {
+	public final synchronized void startFlow(K key) {
 		Validate.notNull(key);
 		if (mSubscribers.containsKey(key)) {
 			return;
@@ -199,14 +191,14 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 			// should not happen
 			throw new IllegalStateException(e);
 		} catch (ModuleException e) {
-			// something went wrong creating the module, throw runtime exception
-			// since no error handling is supported at this point
+			// something went wrong creating the module, throw runtime exception since no error
+			// handling is supported at this point
 			throw new IllegalStateException(e);
 		}
 	}
 
 	@Override
-	public final synchronized void stopFlow(final K key) {
+	public final synchronized void stopFlow(K key) {
 		Validate.notNull(key);
 		ModuleURN subscriberURN = mSubscribers.remove(key);
 		if (subscriberURN == null) {
@@ -238,8 +230,7 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 
 	/**
 	 * Hook for subclasses to provide a custom subscriber to handle market data. The internal
-	 * {@link DataFlowManager.Subscriber} class should be used to respect the manager's source
-	 * module.
+	 * {@link Subscriber} class should be used to respect the manager's source module.
 	 * 
 	 * @param key
 	 *            the data key, will not be null
@@ -278,7 +269,7 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 		 * @param data
 		 *            the unexpected data
 		 */
-		protected final void reportUnexpectedData(final Object data) {
+		protected final void reportUnexpectedData(Object data) {
 			Messages.DATA_FLOW_MANAGER_UNEXPECTED_DATA.warn(DataFlowManager.this, data,
 					getRequest());
 		}
@@ -289,7 +280,7 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 		 * @param data
 		 *            the unexpected data
 		 */
-		protected final void reportUnexpectedMessageId(final Object data) {
+		protected final void reportUnexpectedMessageId(Object data) {
 			Messages.DATA_FLOW_MANAGER_UNEXPECTED_MESSAGE_ID.warn(DataFlowManager.this, data,
 					getRequest());
 		}
@@ -305,7 +296,7 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 		 * @throws IllegalArgumentException
 		 *             if any parameter is null
 		 */
-		protected final boolean validateSymbol(final String expected, final SymbolExchangeEvent event) {
+		protected final boolean validateSymbol(String expected, SymbolExchangeEvent event) {
 			Validate.noNullElements(new Object[] { expected, event });
 			return validateSymbol(expected, event.getSymbol());
 		}
@@ -321,7 +312,7 @@ abstract class DataFlowManager<T extends MDItemImpl, K extends Key<? super T>> i
 		 * @throws IllegalArgumentException
 		 *             if expected is null
 		 */
-		protected final boolean validateSymbol(final String expected, final MSymbol symbol) {
+		protected final boolean validateSymbol(String expected, MSymbol symbol) {
 			Validate.notNull(expected);
 			final String newSymbol = symbol == null ? null : symbol.getFullSymbol();
 			if (expected.equals(newSymbol)) {

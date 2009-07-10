@@ -1,7 +1,6 @@
 package org.marketcetera.util.ws.wrappers;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,16 +23,23 @@ public class CompSerWrapperTest
         new TestComparable(2);
 
 
-    private static class TestComparable
-        extends TestInteger
-        implements Comparable<TestComparable>
+    private static final class TestComparable
+        implements Serializable,
+                   Comparable<TestComparable>
     {       
         private static final long serialVersionUID=1L;
+
+        private int mValue;
 
         public TestComparable
             (int value)
         {
-            super(value);
+            mValue=value;
+        }
+
+        public int getValue()
+        {
+            return mValue;
         }
 
         @Override
@@ -45,30 +51,37 @@ public class CompSerWrapperTest
             }
             return getValue()-other.getValue();
         }
-    }
 
-    private static class TestUnserializableComparable
-        extends TestComparable
-    {
-        private static final long serialVersionUID=1L;
-
-        public TestUnserializableComparable
-            (int value)
+        @Override
+        public String toString()
         {
-            super(value);
+            return "I am "+getValue();
         }
 
-        private void writeObject(ObjectOutputStream out)
-            throws IOException
+        @Override
+        public int hashCode()
         {
-            throw new IOException();
+            return getValue();
+        }
+
+        @Override
+        public boolean equals
+            (Object other)
+        {
+            if (this==other) {
+                return true;
+            }
+            if ((other==null) || !getClass().equals(other.getClass())) {
+                return false;
+            }
+            TestComparable o=(TestComparable)other;
+            return (getValue()==o.getValue());
         }
     }
 
 
     @Test
     public void all()
-        throws Exception
     {
         CompSerWrapper<TestComparable> empty=
             new CompSerWrapper<TestComparable>();
@@ -77,7 +90,6 @@ public class CompSerWrapperTest
                       empty,
                       new CompSerWrapper<TestComparable>(null),
                       "I am 1",TEST_COMPARABLE1,
-                      new TestUnserializableComparable(1),
                       CompSerWrapper.class.getName());
 
         assertComparable(TEST_COMPARABLE1,

@@ -1,6 +1,5 @@
 package org.marketcetera.photon.views;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -44,19 +43,16 @@ public class AddSymbolAction
 			run();
 		}
 	}
+
+	private boolean isValidInput(String inputString) {
+		return inputString!= null && inputString.trim().length()>0;
+	}
 	
 	@Override
 	public void run() {
-		String theInputString = StringUtils.trimToNull(text.getText());
-		if (theInputString != null) {
-			String[] symbols = theInputString.split(","); //$NON-NLS-1$
-			for (String string : symbols) {
-				String trimmed = StringUtils.trimToNull(string);
-				if (trimmed != null) {
-					listener.onAssertSymbol(new MSymbol(trimmed));
-				}
-			}
-		}
+		String theInputString = text.getText();
+		if (isValidInput(theInputString))
+			listener.onAssertSymbol(new MSymbol(text.getText()));
 		text.setText(""); //$NON-NLS-1$
 	}
 	

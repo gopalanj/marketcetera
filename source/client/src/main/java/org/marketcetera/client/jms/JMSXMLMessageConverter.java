@@ -7,7 +7,6 @@ import javax.jms.*;
 import javax.xml.bind.*;
 
 import org.marketcetera.client.brokers.BrokerStatus;
-import org.marketcetera.trade.FIXResponseImpl;
 import org.marketcetera.trade.ReportBaseImpl;
 import org.marketcetera.util.log.I18NBoundMessage1P;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
@@ -39,7 +38,6 @@ public class JMSXMLMessageConverter implements MessageConverter {
         mContext = JAXBContext.newInstance
             (OrderEnvelope.class,
              ReportBaseImpl.class,
-             FIXResponseImpl.class,
              BrokerStatus.class);
     }
 
@@ -70,7 +68,6 @@ public class JMSXMLMessageConverter implements MessageConverter {
                         ObjectUtils.toString(object)).getText(), e);
             }
             if((object instanceof ReportBaseImpl) ||
-               (object instanceof FIXResponseImpl) ||
                (object instanceof OrderEnvelope) ||
                (object instanceof BrokerStatus)) {
                 return object;
@@ -105,7 +102,6 @@ public class JMSXMLMessageConverter implements MessageConverter {
             throws JMSException, MessageConversionException {
         SLF4JLoggerProxy.debug(this, "Converting to JMS {}", inObject);  //$NON-NLS-1$
         if ((inObject instanceof ReportBaseImpl) ||
-            (inObject instanceof FIXResponseImpl) ||
             (inObject instanceof OrderEnvelope) ||
             (inObject instanceof BrokerStatus)) {
             try {

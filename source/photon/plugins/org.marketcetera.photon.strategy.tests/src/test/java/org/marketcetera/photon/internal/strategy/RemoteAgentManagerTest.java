@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.stub;
 import static org.mockito.Mockito.verify;
 
 import java.net.URI;
@@ -81,7 +81,7 @@ public class RemoteAgentManagerTest {
 	@Before
 	public void setup() throws Exception {
 		mockAgent = mock(RemoteStrategyAgent.class);
-		when(mockAgent.getState()).thenReturn(State.STOPPED);
+		stub(mockAgent.getState()).toReturn(State.STOPPED);
 		fixture =
 				new RemoteAgentManager(ModuleSupport.getModuleManager(), ModuleSupport
 						.getMBeanServerConnection(), mockAgent, TEST_INSTANCE);
@@ -95,13 +95,13 @@ public class RemoteAgentManagerTest {
 	@Test
 	public void testConnect() throws Exception {
 		// test null URI fails
-		when(mockAgent.getURI()).thenReturn(null);
+		stub(mockAgent.getURI()).toReturn(null);
 		IStatus status = fixture.connect();
 		assertStatus(status, IStatus.ERROR, Messages.REMOTE_AGENT_MANAGER_MISSING_URI.getText());
 		// test a valid, but bogus URI
 		URI remoteAgentURI = new URI("http://www.bogus.com");
 		assertNull(ModuleSupport.getModuleAttributeSupport().getDefaultFor(TEST_URN, "URL"));
-		when(mockAgent.getURI()).thenReturn(remoteAgentURI);
+		stub(mockAgent.getURI()).toReturn(remoteAgentURI);
 		status = fixture.connect();
 		assertStatus(status, IStatus.ERROR, Messages.REMOTE_AGENT_MANAGER_CONNECT_FAILED
 				.getText(remoteAgentURI));
@@ -118,7 +118,7 @@ public class RemoteAgentManagerTest {
 	@Test
 	public void testDisconnect() {
 		// disconnect when module doesn't exists
-		when(mockAgent.getState()).thenReturn(State.RUNNING);
+		stub(mockAgent.getState()).toReturn(State.RUNNING);
 		fixture.disconnect();
 		verify(mockAgent).setState(State.STOPPED);
 	}

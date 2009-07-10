@@ -35,7 +35,7 @@ import static junit.framework.Assert.assertSame;
 public abstract class CEPTestBase extends ModuleTestBase {
     protected FIXDataDictionary fixDD;
     protected ModuleManager sManager;
-    protected static BlockingSinkDataListener sSink;
+    protected static DummySink sSink;
     protected static Factory sFactory;
 
     // Subclasses shoudl specify
@@ -60,7 +60,7 @@ public abstract class CEPTestBase extends ModuleTestBase {
 
 
     @Before public void before() throws Exception {
-        sSink = new BlockingSinkDataListener();
+        sSink = new DummySink();
         sManager = new ModuleManager();
         sManager.init();
         sManager.addSinkListener(sSink);
@@ -224,7 +224,7 @@ public abstract class CEPTestBase extends ModuleTestBase {
                 }),
                 new DataRequest(getModuleURN(), "select * from "+java.lang.Integer.class.getName())
         });
-        assertEquals(37, sSink.getNextData());
+        assertEquals(37, sSink.getReceived().take());
         sManager.cancel(flow1);
     }
 
@@ -248,7 +248,7 @@ public abstract class CEPTestBase extends ModuleTestBase {
                 new DataRequest(getModuleURN(), "select * from "+BidEvent.class.getName())
         }); 
 
-        BidEvent theBid = (BidEvent) sSink.getNextData();
+        BidEvent theBid = (BidEvent) sSink.getReceived().take();
         assertEquals("didnt' get bid event", "IBM", theBid.getSymbolAsString());
         assertEquals("didnt' get right size", new BigDecimal("85"), theBid.getPrice());
         assertEquals("CEP sent out extra events", 1, sManager.getDataFlowInfo(flow1).getFlowSteps()[1].getNumEmitted());
@@ -269,7 +269,7 @@ public abstract class CEPTestBase extends ModuleTestBase {
                 // System -> Sink: only get 1 bid event
                 new DataRequest(getModuleURN(), "select * from "+BidEvent.class.getName())
         });
-        theBid = (BidEvent) sSink.getNextData();
+        theBid = (BidEvent) sSink.getReceived().take();
         assertEquals("didnt' get bid event", "GOOG", theBid.getSymbolAsString());
         assertEquals("didnt' get right size", new BigDecimal("300"), theBid.getPrice());
         assertEquals("CEP sent out extra events", 1, sManager.getDataFlowInfo(flow2).getFlowSteps()[1].getNumEmitted());
@@ -292,7 +292,7 @@ public abstract class CEPTestBase extends ModuleTestBase {
                 // CEP -> Sink: should only get trade event
                 new DataRequest(getModuleURN(), "select * from "+TradeEvent.class.getName())
         });
-        TradeEvent theTrade = (TradeEvent) sSink.getNextData();
+        TradeEvent theTrade = (TradeEvent) sSink.getReceived().take();
         assertSame("wrong event received", tradeEvent, theTrade);
         assertEquals("didnt' get bid event", "IBM", theTrade.getSymbolAsString());
         assertEquals("didnt' get right size", new BigDecimal("85"), theTrade.getPrice());
@@ -420,7 +420,7 @@ public abstract class CEPTestBase extends ModuleTestBase {
         });
 
         for (int i = 0; i < expectedEvents.length; i++) {
-            Object event = sSink.getNextData();
+            Object event = sSink.getReceived().take();
             if(expectedEvents[i] instanceof Map) {
                 // for some reason, instead of returning the same Map esper re-creates it. so do this the hard way
 

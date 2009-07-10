@@ -5,7 +5,6 @@ import java.util.concurrent.*;
 
 import org.marketcetera.core.ClassVersion;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
-import org.marketcetera.util.misc.NamedThreadFactory;
 
 /**
  * Publication engine which supplies the Publish side of the Publish/Subscribe contract.
@@ -34,7 +33,7 @@ public final class PublisherEngine
     /**
      * the pool of notifiers common to all <code>PublisherEngine</code> objects
      */
-    private static final ExecutorService sNotifierPool = Executors.newCachedThreadPool(new NamedThreadFactory("Publisher-"));  //$NON-NLS-1$
+    private static final ExecutorService sNotifierPool = Executors.newCachedThreadPool();
     /**
      * indicates whether this publisher should do all publications synchronously or not
      */

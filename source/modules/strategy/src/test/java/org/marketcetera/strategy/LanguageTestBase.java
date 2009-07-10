@@ -6,12 +6,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.marketcetera.event.LogEvent.Level.DEBUG;
 import static org.marketcetera.event.LogEvent.Level.ERROR;
 import static org.marketcetera.event.LogEvent.Level.INFO;
 import static org.marketcetera.event.LogEvent.Level.WARN;
 import static org.marketcetera.module.Messages.MODULE_NOT_STARTED_STATE_INCORRECT;
 import static org.marketcetera.module.Messages.MODULE_NOT_STOPPED_STATE_INCORRECT;
+import static org.marketcetera.strategy.Language.JAVA;
 import static org.marketcetera.strategy.Status.FAILED;
 import static org.marketcetera.strategy.Status.RUNNING;
 import static org.marketcetera.strategy.Status.STARTING;
@@ -27,10 +29,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -69,11 +67,12 @@ import org.marketcetera.trade.Side;
 import org.marketcetera.trade.TimeInForce;
 import org.marketcetera.trade.TypesTestBase;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
-import org.marketcetera.util.misc.NamedThreadFactory;
 import org.marketcetera.util.test.UnicodeData;
 
 import quickfix.Message;
 import quickfix.field.TransactTime;
+
+import com.sun.jna.Platform;
 
 /* $License$ */
 
@@ -98,6 +97,7 @@ public abstract class LanguageTestBase
     public void compilesAndTestsCallbacks()
             throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyCompiles();
         ModuleURN strategyModule = createStrategy(strategy.getName(),
                                                   getLanguage(),
@@ -120,6 +120,7 @@ public abstract class LanguageTestBase
     public void doesNotCompile()
             throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         new ExpectedFailure<ModuleException>(FAILED_TO_START) {
             @Override
             protected void run()
@@ -144,6 +145,7 @@ public abstract class LanguageTestBase
     public void wrongLanguage()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // this picks a language that is *not* the one we are testing, doesn't really matter which one
         final Language wrongLanguage = Language.values()[(getLanguage().ordinal() + 1) % Language.values().length];
         new ExpectedFailure<ModuleException>(FAILED_TO_START) {
@@ -170,6 +172,7 @@ public abstract class LanguageTestBase
     public void noStrategySubclass()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         new ExpectedFailure<ModuleException>(FAILED_TO_START) {
             @Override
             protected void run()
@@ -194,6 +197,7 @@ public abstract class LanguageTestBase
     public void multipleClasses()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyMultipleClasses();
         doSuccessfulStartTest(createStrategy(strategy.getName(),
                                              getLanguage(),
@@ -212,6 +216,7 @@ public abstract class LanguageTestBase
     public void noMatchingName()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy2 = getStrategyCompiles();
         new ExpectedFailure<ModuleException>(FAILED_TO_START) {
             @Override
@@ -239,6 +244,7 @@ public abstract class LanguageTestBase
     public void almostEmptyStrategy()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getEmptyStrategy();
         // need to piece this together manually as only "onAsk" will be set
         ModuleURN strategyURN = createStrategy(strategy.getName(),
@@ -269,6 +275,7 @@ public abstract class LanguageTestBase
     public void parameterStrategy()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getParameterStrategy();
         Properties parameters = new Properties();
         parameters.setProperty("onAsk",
@@ -311,28 +318,19 @@ public abstract class LanguageTestBase
     public void runtimeError()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // runtime error in onStart
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         parameters.setProperty("shouldFailOnStart",
                                "true");
-        final ModuleURN strategyURN = moduleManager.createModule(StrategyModuleFactory.PROVIDER_URN,
-                                                                 null,
-                                                                 strategy.getName(),
-                                                                 getLanguage(),
-                                                                 strategy.getFile(),
-                                                                 parameters,
-                                                                 null,
-                                                                 null);
         // failed "onStart" means that the strategy is in error status and will not receive any data
-        new ExpectedFailure<ModuleException>(FAILED_TO_START) {
-            @Override
-            protected void run()
-                    throws Exception
-            {
-                moduleManager.start(strategyURN);
-            }
-        };
+        ModuleURN strategyURN = createStrategy(strategy.getName(),
+                                               getLanguage(),
+                                               strategy.getFile(),
+                                               parameters,
+                                               null,
+                                               null);
         // "onStart" has completed, but verify that the last statement in the strategy was never executed
         verifyPropertyNull("onStart");
         // verify the status of the strategy
@@ -343,14 +341,14 @@ public abstract class LanguageTestBase
         AbstractRunningStrategy.setProperty("shouldFailOnStop",
                                             "true");
         // runtime error in onStop
-        ModuleURN strategyURN2 = createStrategy(strategy.getName(),
-                                                getLanguage(),
-                                                strategy.getFile(),
-                                                parameters,
-                                                null,
-                                                null);
-        doSuccessfulStartTest(strategyURN2);
-        stopStrategy(strategyURN2);
+        strategyURN = createStrategy(strategy.getName(),
+                                     getLanguage(),
+                                     strategy.getFile(),
+                                     parameters,
+                                     null,
+                                     null);
+        doSuccessfulStartTest(strategyURN);
+        stopStrategy(strategyURN);
         AbstractRunningStrategy.setProperty("shouldFailOnStop",
                                             null);
         // runtime error in each callback
@@ -374,41 +372,28 @@ public abstract class LanguageTestBase
     public void longRunningStart()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         parameters.setProperty("shouldLoopOnStart",
                                "true");
         assertNull(AbstractRunningStrategy.getProperty("loopDone"));
         // need to manually start the strategy because it will be in "STARTING" status for a long long time
-        final ModuleURN strategyURN = moduleManager.createModule(StrategyModuleFactory.PROVIDER_URN,
-                                                                 null,
-                                                                 strategy.getName(),
-                                                                 getLanguage(),
-                                                                 strategy.getFile(),
-                                                                 parameters,
-                                                                 null,
-                                                                 null);
-        // start the strategy in another thread
-        Future<ModuleURN> future = doAsynchronous(new Callable<ModuleURN>() {
-            @Override
-            public ModuleURN call()
-                    throws Exception
-            {
-                moduleManager.start(strategyURN);
-                return strategyURN;
-            }
-        });
+        final ModuleURN strategyURN = createModule(StrategyModuleFactory.PROVIDER_URN,
+                                                   null,
+                                                   strategy.getName(),
+                                                   getLanguage(),
+                                                   strategy.getFile(),
+                                                   parameters,
+                                                   null,
+                                                   null);
         // wait until the strategy enters "STARTING"
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
             public Boolean call()
                     throws Exception
             {
-                try {
-                    return getStatus(strategyURN).equals(STARTING);
-                } catch (Exception e) {
-                    return false;
-                }
+                return getStatus(strategyURN).equals(STARTING);
             }
         });
         // take a little snooze - long enough that the strategy "onStart" will have completed if it was going to
@@ -420,7 +405,6 @@ public abstract class LanguageTestBase
         // tell the loop to stop
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
-        future.get();
         // wait until the strategy has time to complete
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
@@ -432,7 +416,6 @@ public abstract class LanguageTestBase
         });
         // verify that the "onStart" loop completed
         assertNotNull(AbstractRunningStrategy.getProperty("loopDone"));
-        moduleManager.stop(strategyURN);
     }
     /**
      * Tests a strategy with an arbitrarily long onStop.
@@ -443,6 +426,7 @@ public abstract class LanguageTestBase
     public void longRunningStop()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         parameters.setProperty("shouldLoopOnStop",
@@ -453,19 +437,9 @@ public abstract class LanguageTestBase
                                                      parameters,
                                                      null,
                                                      null);
-        // begin stop process
+        // being stop process
         assertNull(AbstractRunningStrategy.getProperty("loopDone"));
-        final List<Throwable> thrownExceptions = new ArrayList<Throwable>();
-        // stop the strategy in another thread
-        Future<ModuleURN> future = doAsynchronous(new Callable<ModuleURN>() {
-            @Override
-            public ModuleURN call()
-                    throws Exception
-            {
-                moduleManager.stop(strategyURN);
-                return strategyURN;
-            }
-        });
+        moduleManager.stop(strategyURN);
         // wait until the strategy enters "STOPPING" status
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
@@ -484,7 +458,6 @@ public abstract class LanguageTestBase
         // tell the loop to stop
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
-        future.get();
         // wait until the strategy has time to complete
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
@@ -496,7 +469,6 @@ public abstract class LanguageTestBase
         });
         // verify that the "onStop" loop completed
         assertNotNull(AbstractRunningStrategy.getProperty("loopDone"));
-        assertTrue(thrownExceptions.isEmpty());
     }
     /**
      * This test makes sure that data cannot be requested or sent after stop has begun.
@@ -507,6 +479,7 @@ public abstract class LanguageTestBase
     public void restrictedActionsDuringStop()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         // set up stop loop to request data *and* to delay stopping long enough for the request to be honored (if it were allowed)
@@ -529,16 +502,8 @@ public abstract class LanguageTestBase
         verifyPropertyNull("requestID");
         // the stop loop marker is not present
         verifyPropertyNull("loopDone");
-        // stop the strategy in another thread
-        Future<ModuleURN> future = doAsynchronous(new Callable<ModuleURN>() {
-            @Override
-            public ModuleURN call()
-                    throws Exception
-            {
-                moduleManager.stop(strategyURN);
-                return strategyURN;
-            }
-        });
+        // trigger begin of stop loop
+        moduleManager.stop(strategyURN);
         // wait until the strategy enters "STOPPING" status
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
@@ -555,7 +520,6 @@ public abstract class LanguageTestBase
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
         // wait until strategy stops
-        future.get();
         verifyStrategyStopped(strategyURN);
         // make sure the loop completed normally
         verifyPropertyNonNull("loopDone");
@@ -573,6 +537,7 @@ public abstract class LanguageTestBase
     public void marketDataRequests()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         for(int apiStringCounter=0;apiStringCounter<=0;apiStringCounter++) {
             getMarketData(BogusFeedModuleFactory.IDENTIFIER,
                           "GOOG,YHOO,MSFT,METC",
@@ -599,6 +564,7 @@ public abstract class LanguageTestBase
     public void marketDataRequestFromNonexistentSource()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         for(int apiStringCounter=0;apiStringCounter<=0;apiStringCounter++) {
             verifyNullProperties();
             getMarketData("provider-does-not-exist",
@@ -620,6 +586,7 @@ public abstract class LanguageTestBase
     public void marketDataRequestFromUnstartedSource()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         for(int apiStringCounter=0;apiStringCounter<=0;apiStringCounter++) {
             // stop the bogus provider
             assertTrue(moduleManager.getModuleInfo(BogusFeedModuleFactory.INSTANCE_URN).getState().isStarted());
@@ -648,6 +615,7 @@ public abstract class LanguageTestBase
     public void cancelMarketDataRequest()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         for(int apiStringCounter=0;apiStringCounter<=0;apiStringCounter++) {
             ModuleURN strategyURN = getMarketData(BogusFeedModuleFactory.IDENTIFIER,
                                                   "GOOG,YHOO,MSFT,METC",
@@ -693,6 +661,7 @@ public abstract class LanguageTestBase
     public void cancelNonExistentMarketDataRequest()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy = getStrategyCompiles();
         // create a strategy that does not request market data
         ModuleURN strategyURN = createStrategy(strategy.getName(),
@@ -725,6 +694,7 @@ public abstract class LanguageTestBase
     public void callbackAfter()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -750,6 +720,7 @@ public abstract class LanguageTestBase
     public void callbackAt()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -776,6 +747,7 @@ public abstract class LanguageTestBase
     public void callbackAfterEarlier()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -802,6 +774,7 @@ public abstract class LanguageTestBase
     public void callbackAtEarlier()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -829,6 +802,7 @@ public abstract class LanguageTestBase
     public void callbackAfterZero()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -855,6 +829,7 @@ public abstract class LanguageTestBase
     public void callbackAtZero()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -882,6 +857,7 @@ public abstract class LanguageTestBase
     public void callbackFails()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -915,6 +891,7 @@ public abstract class LanguageTestBase
     public void callbackAtWithNullPayload()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         Date callbackAt = new Date();
@@ -943,6 +920,7 @@ public abstract class LanguageTestBase
     public void simultaneousCallbacks()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start a strategy
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
@@ -973,6 +951,7 @@ public abstract class LanguageTestBase
     public void callbacksAfterStop()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         Date callbackAt = new Date(System.currentTimeMillis()+2000);
@@ -1003,6 +982,7 @@ public abstract class LanguageTestBase
     public void sequentialCallbacks()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         final StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         Date callbackAt = new Date(System.currentTimeMillis() + 1000);
@@ -1035,6 +1015,7 @@ public abstract class LanguageTestBase
     public void suggestions()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         Properties parameters = new Properties();
         // null suggestion
         parameters.setProperty("orderShouldBeNull",
@@ -1117,6 +1098,7 @@ public abstract class LanguageTestBase
     public void sendMessages()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         Properties parameters = new Properties();
         Date messageDate = new Date();
         parameters.setProperty("date",
@@ -1153,6 +1135,7 @@ public abstract class LanguageTestBase
     public void startStop()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyCompiles();
         ModuleURN strategyModule = moduleManager.createModule(StrategyModuleFactory.PROVIDER_URN,
                                                               "MyStrategy",
@@ -1177,6 +1160,7 @@ public abstract class LanguageTestBase
     public void manyStrategiesStartStop()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyCompiles();
         int index = 0;
         while (index++ < 500) {
@@ -1202,6 +1186,7 @@ public abstract class LanguageTestBase
     public void manyStrategiesStartWithoutStop()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyCompiles();
         int index = 0;
         while (index++ < 500) {
@@ -1225,6 +1210,7 @@ public abstract class LanguageTestBase
     public void mxBeanOperations()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getParameterStrategy(); 
         // create a strategy with no parameters
         ModuleURN strategyURN = createStrategy(strategy.getName(),
@@ -1303,6 +1289,7 @@ public abstract class LanguageTestBase
     public void distinguishingSubscribers()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         ModuleURN alternateURN = createModule(MockRecorderModule.Factory.PROVIDER_URN);
         StrategyCoordinates strategy = getSuggestionStrategy();
         Properties parameters = new Properties();
@@ -1342,6 +1329,7 @@ public abstract class LanguageTestBase
     public void helperRedefinition()
             throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy1 = getPart1Strategy();
         doSuccessfulStartTestNoVerification(createStrategy(strategy1.getName(),
                                                            getLanguage(),
@@ -1366,6 +1354,7 @@ public abstract class LanguageTestBase
     public void notifications()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         Level startingLevel = Logger.getLogger(Strategy.STRATEGY_MESSAGES).getLevel();
         try {
             Logger.getLogger(Strategy.STRATEGY_MESSAGES).setLevel(Level.ALL);
@@ -1493,6 +1482,7 @@ public abstract class LanguageTestBase
     public void brokers()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // call should fail
         MockClient.getBrokersFails = true;
         doBrokerTest(new BrokerStatus[0]);
@@ -1512,6 +1502,7 @@ public abstract class LanguageTestBase
     public void orders()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         List<OrderSingle> cumulativeOrders = new ArrayList<OrderSingle>();
         ModuleURN strategy = generateOrders(getOrdersStrategy(),
                                             outputURN);
@@ -1624,6 +1615,7 @@ public abstract class LanguageTestBase
     public void executionReports()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // create a strategy that sends its orders to a known module that can also emit execution reports
         generateOrders(getOrdersStrategy(),
                        outputURN);
@@ -1650,6 +1642,7 @@ public abstract class LanguageTestBase
     public void cancelAllOrders()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // cancel 0 orders
         ModuleURN strategy = generateOrders(getOrdersStrategy(),
                                             outputURN);
@@ -1707,6 +1700,7 @@ public abstract class LanguageTestBase
     public void cancelSingleOrder()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // set up data for the orders to be created
         // set price
         AbstractRunningStrategy.setProperty("price",
@@ -1795,6 +1789,7 @@ public abstract class LanguageTestBase
     public void cancelReplace()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // for now, forbid the creation of execution reports
         MockRecorderModule.shouldSendExecutionReports = false;
         // set up data for the orders to be created
@@ -1858,9 +1853,7 @@ public abstract class LanguageTestBase
         assertNull(AbstractRunningStrategy.getProperty("newOrderID"));
         // now allow the cancel/replace to succeed
         runningStrategy.onOther(newOrder);
-        String replaceIDString = AbstractRunningStrategy.getProperty("newOrderID");
-        assertNotNull(replaceIDString);
-        assertFalse(replaceIDString.equals(newOrder.getOrderID().toString()));
+        assertNotNull(AbstractRunningStrategy.getProperty("newOrderID"));
         // hooray, it worked
         // turn on execution reports
         MockRecorderModule.shouldSendExecutionReports = true;
@@ -1899,6 +1892,7 @@ public abstract class LanguageTestBase
     public void positions()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         String validSymbol = positions.keySet().iterator().next().toString();
         Position position = positions.get(new MSymbol(validSymbol));
         String invalidSymbol = "there-is-no-position-for-this-symbol-" + System.nanoTime();
@@ -1976,6 +1970,7 @@ public abstract class LanguageTestBase
     public void strategiesOfSameClass()
             throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy1 = getPart1Strategy();
         ModuleURN strategy1URN = createStrategy(strategy1.getName(),
                                                 getLanguage(),
@@ -2016,6 +2011,7 @@ public abstract class LanguageTestBase
     public void redefinedStrategy()
             throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy1 = getPart1Strategy();
         StrategyCoordinates strategy2 = getPart1RedefinedStrategy();
         ModuleURN strategy1URN = createStrategy(strategy1.getName(),
@@ -2064,6 +2060,7 @@ public abstract class LanguageTestBase
     public void cep()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         String validEsperStatement1 = "select * from trade where symbolAsString='METC'";
         String validEsperStatement2 = "select * from ask where symbolAsString='ORCL'";
         String validSystemStatement1 = "select * from trade";
@@ -2226,6 +2223,7 @@ public abstract class LanguageTestBase
     public void cancelSingleCep()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         EventBase[] events = new EventBase[] { new TradeEvent(System.nanoTime(), System.currentTimeMillis(), new MSymbol("METC"), "Q", new BigDecimal("1"), new BigDecimal("100")),
                                                new TradeEvent(System.nanoTime(), System.currentTimeMillis(), new MSymbol("ORCL"), "Q", new BigDecimal("2"), new BigDecimal("200")),
                                                new AskEvent(System.nanoTime(), System.currentTimeMillis(), new MSymbol("METC"), "Q", new BigDecimal("3"), new BigDecimal("300")),
@@ -2284,6 +2282,7 @@ public abstract class LanguageTestBase
     public void cancelAllCep()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         EventBase[] events = new EventBase[] { new TradeEvent(System.nanoTime(), System.currentTimeMillis(), new MSymbol("METC"), "Q", new BigDecimal("1"), new BigDecimal("100")),
                                                new TradeEvent(System.nanoTime(), System.currentTimeMillis(), new MSymbol("ORCL"), "Q", new BigDecimal("2"), new BigDecimal("200")),
                                                new AskEvent(System.nanoTime(), System.currentTimeMillis(), new MSymbol("METC"), "Q", new BigDecimal("3"), new BigDecimal("300")),
@@ -2318,6 +2317,7 @@ public abstract class LanguageTestBase
     public void sendEventToCEP()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // start the event strategy
         StrategyCoordinates strategyFile = getEventStrategy();
         theStrategy = createStrategy(strategyFile.getName(),
@@ -2403,6 +2403,7 @@ public abstract class LanguageTestBase
     public void sendEvent()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         // these will be the subscribers to events
         ModuleURN alternateURN = createModule(MockRecorderModule.Factory.PROVIDER_URN);
         MockRecorderModule eventSubscriber = MockRecorderModule.Factory.recorders.get(outputURN);
@@ -2471,6 +2472,7 @@ public abstract class LanguageTestBase
     public void processedMarketDataRequests()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getCombinedStrategy();
         for(int apiCounter=0;apiCounter<=1;apiCounter++) {
             boolean useStringAPI = (apiCounter == 1);
@@ -2578,6 +2580,7 @@ public abstract class LanguageTestBase
     public void stateChanges()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         StrategyCoordinates strategy = getStrategyCompiles();
         final Properties parameters = new Properties();
         parameters.setProperty("shouldLoopOnStart",
@@ -2588,27 +2591,14 @@ public abstract class LanguageTestBase
         verifyPropertyNull("onStartBegins");
         // strategy doesn't exist yet
         // need to manually start the strategy because it will be in "STARTING" status for a long long time (UNSTARTED->COMPILING->STARTING)
-        final ModuleURN strategyURN = moduleManager.createModule(StrategyModuleFactory.PROVIDER_URN,
-                                                                 null,
-                                                                 strategy.getName(),
-                                                                 getLanguage(),
-                                                                 strategy.getFile(),
-                                                                 parameters,
-                                                                 null,
-                                                                 null);
-        final List<Throwable> thrownExceptions = new ArrayList<Throwable>();
-        // start the strategy in another thread
-        Thread helperThread = new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                try {
-                    moduleManager.start(strategyURN);
-                } catch (ModuleException e) {
-                    thrownExceptions.add(e);
-                }
-            }});
-        helperThread.start();
+        final ModuleURN strategyURN = createModule(StrategyModuleFactory.PROVIDER_URN,
+                                                   null,
+                                                   strategy.getName(),
+                                                   getLanguage(),
+                                                   strategy.getFile(),
+                                                   parameters,
+                                                   null,
+                                                   null);
         // strategy is now somewhere in the journey from UNSTARTED->COMPILING->STARTING.  this change is atomic with respect
         //  to module operations
         // wait until the strategy enters "STARTING"
@@ -2617,12 +2607,8 @@ public abstract class LanguageTestBase
             public Boolean call()
                     throws Exception
             {
-                try {
-                    return getStatus(strategyURN).equals(STARTING) &&
-                                     AbstractRunningStrategy.getProperty("onStartBegins") != null;
-                } catch (Exception e) {
-                    return false;
-                }
+                return getStatus(strategyURN).equals(STARTING) &&
+                       AbstractRunningStrategy.getProperty("onStartBegins") != null;
             }
         });
         // strategy is in STARTING state and will stay there until released by instrumentation that affects the running strategy
@@ -2644,11 +2630,13 @@ public abstract class LanguageTestBase
         };
         verifyStrategyStatus(strategyURN,
                              STARTING);
+        StrategyImpl strategyImpl = getRunningStrategy(strategyURN);
+        // make sure the strategy module still thinks we're starting
+        assertTrue(moduleManager.getModuleInfo(strategyURN).getState().isStarted());
         // try to stop the module (STARTING->STOPPING)
-        new ExpectedFailure<ModuleStateException>(MODULE_NOT_STOPPED_STATE_INCORRECT,
-                                                  strategyURN.toString(),
-                                                  ExpectedFailure.IGNORE,
-                                                  ExpectedFailure.IGNORE) {
+        new ExpectedFailure<ModuleStateException>(STRATEGY_STILL_RUNNING,
+                                                  strategyImpl.toString(),
+                                                  STARTING) {
             @Override
             protected void run()
                 throws Exception
@@ -2656,10 +2644,11 @@ public abstract class LanguageTestBase
                 moduleManager.stop(strategyURN);
             }
         };
+        // module is still started
+        assertTrue(moduleManager.getModuleInfo(strategyURN).getState().isStarted());
         // release the running strategy (or it will keep running beyond the end of the test)
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
-        helperThread.join();
         // strategy is now moving from STARTING->RUNNING
         // wait for the strategy to become ready
         verifyStrategyReady(strategyURN);
@@ -2682,17 +2671,7 @@ public abstract class LanguageTestBase
         // make sure the strategy loops in onStop so we have time to play with it
         // reset all our flags and counters
         setPropertiesToNull();
-        helperThread = new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                try {
-                    moduleManager.stop(strategyURN);
-                } catch (ModuleException e) {
-                    thrownExceptions.add(e);
-                }
-            }});
-        helperThread.start();
+        moduleManager.stop(strategyURN);
         // wait until the strategy enters "STOPPING"
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
@@ -2700,7 +2679,7 @@ public abstract class LanguageTestBase
                     throws Exception
             {
                 return getStatus(strategyURN).equals(STOPPING) &&
-                                 AbstractRunningStrategy.getProperty("onStopBegins") != null;
+                       AbstractRunningStrategy.getProperty("onStopBegins") != null;
             }
         });
         // strategy is now looping
@@ -2722,10 +2701,9 @@ public abstract class LanguageTestBase
             }
         };
         // test starting (STOPPING->UNSTARTED)
-        new ExpectedFailure<ModuleStateException>(MODULE_NOT_STARTED_STATE_INCORRECT,
-                                                  strategyURN.toString(),
-                                                  ExpectedFailure.IGNORE,
-                                                  ExpectedFailure.IGNORE) {
+        new ExpectedFailure<ModuleStateException>(STRATEGY_STILL_RUNNING,
+                                                  strategyImpl.toString(),
+                                                  strategyImpl.getStatus()) {
             @Override
             protected void run()
                 throws Exception
@@ -2736,7 +2714,6 @@ public abstract class LanguageTestBase
         // let the strategy stop
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
-        helperThread.join();
         // wait for the strategy to stop
         verifyStrategyStopped(strategyURN);
         verifyStrategyStatus(strategyURN,
@@ -2783,7 +2760,6 @@ public abstract class LanguageTestBase
         // make sure it can start again (FAILED->UNSTARTED)
         moduleManager.start(strategyURN);
         verifyStrategyReady(strategyURN);
-        moduleManager.stop(strategyURN);
     }
     /**
      * Tests the ability for a strategy to request and receive {@link org.marketcetera.marketdata.MarketDataRequest.Content#MARKET_STAT} data.
@@ -2794,6 +2770,7 @@ public abstract class LanguageTestBase
     public void statistics()
         throws Exception
     {
+        assumeTrue(!(Platform.isWindows() && getLanguage().equals(JAVA)));
         verifyPropertyNull("onStatistics");
         Properties parameters = new Properties();
         parameters.setProperty("content",
@@ -2907,6 +2884,63 @@ public abstract class LanguageTestBase
     protected int getExpectedCompilationWarningsFor(StrategyCoordinates inStrategy)
     {
         return 0;
+    }
+    /**
+     * Executes a single interrupt test.
+     *
+     * @param inLoopOnStart a <code>boolean</code> value if the start loop should hang
+     * @param inLoopOnStop a <code>boolean</code> value if the stop loop should hang
+     * @throws Exception if an error occurs
+     */
+    protected void doInterruptTest(boolean inLoopOnStart,
+                                   boolean inLoopOnStop)
+        throws Exception
+    {
+        Properties parameters = new Properties();
+        if(inLoopOnStart) {
+            parameters.setProperty("shouldLoopOnStart",
+                                   "true");
+        }
+        if(inLoopOnStop) {
+            parameters.setProperty("shouldLoopOnStop",
+                                   "true");
+        }
+        StrategyCoordinates strategy = getStrategyCompiles();
+        final ModuleURN strategyURN = createModule(StrategyModuleFactory.PROVIDER_URN,
+                                                   null,
+                                                   strategy.getName(),
+                                                   getLanguage(),
+                                                   strategy.getFile(),
+                                                   parameters,
+                                                   null,
+                                                   null);
+        // wait for the appropriate condition before continuing
+        if(inLoopOnStart) {
+            // wait for the property to enter STARTING and the start loop to actually begin
+            MarketDataFeedTestBase.wait(new Callable<Boolean>(){
+                @Override
+                public Boolean call()
+                        throws Exception
+                {
+                    return getStatus(strategyURN).equals(STARTING) &&
+                           AbstractRunningStrategy.getProperty("onStartBegins") != null;
+                }
+            });
+            // strategy is looping in "onStart"
+            verifyStrategyStatus(strategyURN,
+                                 STARTING);
+        } else {
+            verifyStrategyReady(strategyURN);
+            verifyStrategyStatus(strategyURN,
+                                 RUNNING);
+        }
+        // strategy is in STARTING or RUNNING state
+        // try to interrupt
+        StrategyMXBean mxInterface = getMXProxy(strategyURN);
+        mxInterface.interrupt();
+        // status always ends up as STOPPED after interrupt
+        verifyStrategyStatus(strategyURN,
+                             STOPPED);
     }
     /**
      * Executes a single processed market data request test. 
@@ -3524,23 +3558,6 @@ public abstract class LanguageTestBase
             verifyPropertyNull(callbackShouldBeNull);
         }
     }
-    /**
-     * Executes the given block asynchronously.
-     * 
-     * @param inBlock a <code>Callable&lt;T&gt;</code> value
-     * @return a <code>Future&lt;T&gt;</code> value
-     * @throws InterruptedException if an error occurs
-     * @throws ExecutionException if an error occurs
-     */
-    private <T> Future<T> doAsynchronous(Callable<T> inBlock)
-        throws InterruptedException, ExecutionException
-    {
-        return executor.submit(inBlock);
-    }
-    /**
-     * used for asynchronous test blocks
-     */
-    private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("LanguageTestBase"));  //$NON-NLS-1$
     /**
      * Indicates that a <code>JUnit</code> test is designated as a performance test instead of a unit test.
      * 

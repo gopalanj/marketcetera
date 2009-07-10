@@ -27,7 +27,6 @@ public class ByteHolder
     private Byte[] mArray;
 
 
-    @SuppressWarnings("unused")
     private ByteHolder() {}
 
     public ByteHolder

@@ -1,7 +1,6 @@
 package org.marketcetera.modules.csv;
 
 import org.marketcetera.util.misc.ClassVersion;
-import org.marketcetera.util.misc.NamedThreadFactory;
 import org.marketcetera.util.unicode.UnicodeInputStreamReader;
 import org.marketcetera.util.unicode.DecodingStrategy;
 import org.marketcetera.util.log.I18NBoundMessage1P;
@@ -44,17 +43,6 @@ import org.apache.commons.csv.CSVStrategy;
  *      <li>{@link File}: path to the csv file.</li>
  *      <li>{@link URL}: the url of the csv file.</li>
  * </ul>
- * <p>
- * Module Features
- * <table>
- * <tr><th>Capabilities</th><td>Data Emitter</td></tr>
- * <tr><th>DataFlow Request Parameters</th><td>String, File or URL. Usage explained above.</td></tr>
- * <tr><th>Stops data flows</th><td>Yes, if there's no more data to emit or if there was an error reading data from the file/URL.</td></tr>
- * <tr><th>Start Operation</th><td>Initializes the thread pool for emitting data.</td></tr>
- * <tr><th>Stop Operation</th><td>Shuts down the thread pool.</td></tr>
- * <tr><th>Management Interface</th><td>none</td></tr>
- * <tr><th>Factory</th><td>{@link CSVEmitterFactory}</td></tr>
- * </table>
  *
  * @author anshul@marketcetera.com
  */
@@ -69,8 +57,7 @@ public class CSVEmitter extends Module implements DataEmitter {
 
     @Override
     protected void preStart() {
-        mService = Executors.newCachedThreadPool(
-                new NamedThreadFactory("CSVEmitter-"));  //$NON-NLS-1$
+        mService = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -87,7 +74,7 @@ public class CSVEmitter extends Module implements DataEmitter {
         if(obj == null) {
             throw new IllegalRequestParameterValue(getURN(), null);
         }
-        URL csv;
+        URL csv = null;
         boolean isReverse = false;
         try {
             if(obj instanceof String) {
@@ -119,7 +106,7 @@ public class CSVEmitter extends Module implements DataEmitter {
 
     @Override
     public void cancel(DataFlowID inFlowID, RequestID inRequestID) {
-        Future<Boolean> future = mRequests.remove(inRequestID);
+        Future<Boolean> future = mRequests.get(inRequestID);
         if (future != null) {
             future.cancel(true);
         }

@@ -26,7 +26,6 @@ public class DateWrapperHolder
     private DateWrapper[] mArray;
 
 
-    @SuppressWarnings("unused")
     private DateWrapperHolder() {}
 
     public DateWrapperHolder

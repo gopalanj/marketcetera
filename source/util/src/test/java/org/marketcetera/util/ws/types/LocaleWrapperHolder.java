@@ -26,7 +26,6 @@ public class LocaleWrapperHolder
     private LocaleWrapper[] mArray;
 
 
-    @SuppressWarnings("unused")
     private LocaleWrapperHolder() {}
 
     public LocaleWrapperHolder

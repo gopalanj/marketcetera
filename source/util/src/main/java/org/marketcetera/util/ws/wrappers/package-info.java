@@ -1,7 +1,6 @@
 /**
  * <p>Wrappers enabling certain web service data types to be
- * marshalled. None of the classes in this package are
- * thread-safe.</p>
+ * marshalled.</p>
  *
  * <p>See also the documentation of {@link
  * org.marketcetera.util.ws.stateful}</p>

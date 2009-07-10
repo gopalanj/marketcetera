@@ -1,7 +1,6 @@
 package org.marketcetera.module;
 
 import org.marketcetera.util.misc.ClassVersion;
-import org.marketcetera.util.misc.NamedThreadFactory;
 import org.marketcetera.util.log.I18NMessage0P;
 import org.junit.Test;
 import org.junit.After;
@@ -1293,7 +1292,6 @@ public class ModuleConcurrencyTest extends ModuleTestBase {
             mManager = null;
         }
     }
-    private final static ExecutorService sService = Executors.newCachedThreadPool(
-            new NamedThreadFactory("TestModuleConcurrency"));
+    private final static ExecutorService sService = Executors.newCachedThreadPool();
     private ModuleManager mManager;
 }

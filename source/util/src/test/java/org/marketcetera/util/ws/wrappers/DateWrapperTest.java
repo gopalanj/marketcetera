@@ -25,7 +25,6 @@ public class DateWrapperTest
 
     @Test
     public void all()
-        throws Exception
     {
         DateWrapper empty=new DateWrapper();
         dual(new DateWrapper(TEST_DATE),

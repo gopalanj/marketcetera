@@ -12,9 +12,9 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.marketcetera.photon.marketdata.IMarketDataFeed;
-import org.marketcetera.photon.marketdata.IMarketDataManager;
-import org.marketcetera.photon.marketdata.MarketDataConstants;
+import org.marketcetera.photon.marketdata.MarketDataFeed;
+import org.marketcetera.photon.marketdata.MarketDataManager;
+import org.marketcetera.photon.marketdata.MarketDataPreferences;
 import org.marketcetera.util.misc.ClassVersion;
 
 /* $License$ */
@@ -30,7 +30,8 @@ import org.marketcetera.util.misc.ClassVersion;
 public class MarketDataPreferencePage extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage {
 
-	private final IMarketDataManager mMarketDataManager = Activator.getMarketDataManager();
+	private final MarketDataManager mMarketDataManager = MarketDataManager
+			.getCurrent();
 
 	private ComboFieldEditor mActiveFeedField;
 
@@ -50,12 +51,12 @@ public class MarketDataPreferencePage extends FieldEditorPreferencePage
 
 	@Override
 	protected void createFieldEditors() {
-		Collection<? extends IMarketDataFeed> providers = mMarketDataManager
+		Collection<MarketDataFeed> providers = mMarketDataManager
 				.getProviders();
 		List<String[]> namesValues = new ArrayList<String[]>();
 		// blank one to represent no selection
 		namesValues.add(new String[] { "", "" }); //$NON-NLS-1$ //$NON-NLS-2$
-		for (IMarketDataFeed provider : providers) {
+		for (MarketDataFeed provider : providers) {
 			String name = provider.getName();
 			if (name == null) {
 				name = provider.getId();
@@ -71,7 +72,7 @@ public class MarketDataPreferencePage extends FieldEditorPreferencePage
 
 		});
 		mActiveFeedField = new ComboFieldEditor(
-				MarketDataConstants.DEFAULT_ACTIVE_MARKETDATA_PROVIDER,
+				MarketDataPreferences.DEFAULT_ACTIVE_MARKETDATA_PROVIDER,
 				Messages.ACTIVE_MARKET_DATA_FEED_LABEL.getText(), namesValues
 						.toArray(new String[namesValues.size()][]),
 				getFieldEditorParent());

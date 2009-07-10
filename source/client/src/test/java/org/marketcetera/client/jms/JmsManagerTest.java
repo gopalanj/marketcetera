@@ -52,7 +52,7 @@ public class JmsManagerTest
             sender.convertAndSend(firstReply.create(i));
         }
         // Wait until delivery is complete.
-        Thread.sleep(5000);
+        Thread.sleep(1000);
         // Confirm transferred data matches expected values.
         for (SampleReplyHandler<T> reply:replies) {
             assertEquals(TEST_COUNT,reply.getReceived().size());

@@ -827,39 +827,22 @@ public class StrategyModuleTest
         verifyPropertyNull("loopDone");
         verifyPropertyNull("onStartBegins");
         // need to manually start the strategy because it will be in "STARTING" status for a long long time
-        final ModuleURN strategyURN = moduleManager.createModule(StrategyModuleFactory.PROVIDER_URN,
-                                                                 null,
-                                                                 RubyLanguageTest.STRATEGY_NAME,
-                                                                 RUBY,
-                                                                 RubyLanguageTest.STRATEGY,
-                                                                 parameters,
-                                                                 null,
-                                                                 null);
-        final List<Exception> thrownExceptions = new ArrayList<Exception>();
-        // start the strategy in another thread
-        Thread helperThread = new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                try {
-                    moduleManager.start(strategyURN);
-                } catch (ModuleException e) {
-                    thrownExceptions.add(e);
-                }
-            }});
-        helperThread.start();
+        final ModuleURN strategyURN = createModule(StrategyModuleFactory.PROVIDER_URN,
+                                                   null,
+                                                   RubyLanguageTest.STRATEGY_NAME,
+                                                   RUBY,
+                                                   RubyLanguageTest.STRATEGY,
+                                                   parameters,
+                                                   null,
+                                                   null);
         // wait until the strategy enters "STARTING"
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
             public Boolean call()
                     throws Exception
             {
-                try {
-                    return getStatus(strategyURN).equals(STARTING) &&
-                           AbstractRunningStrategy.getProperty("onStartBegins") != null;
-                } catch (Exception e) {
-                    return false;
-                }
+                return getStatus(strategyURN).equals(STARTING) &&
+                       AbstractRunningStrategy.getProperty("onStartBegins") != null;
             }
         });
         // strategy is now looping
@@ -881,10 +864,9 @@ public class StrategyModuleTest
         // release the running strategy (or it will keep running beyond the end of the test)
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
-        helperThread.join();
-        assertTrue(thrownExceptions.isEmpty());
         // wait for the strategy to become ready
         verifyStrategyReady(strategyURN);
+        StrategyImpl strategy = getRunningStrategy(strategyURN);
         verifyStrategyStatus(strategyURN,
                              RUNNING);
         // try to start again
@@ -903,18 +885,7 @@ public class StrategyModuleTest
         // make sure the strategy loops in onStop so we have time to play with it
         // reset all our flags and counters
         setPropertiesToNull();
-        helperThread = new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                try {
-                    moduleManager.stop(strategyURN);
-                } catch (Exception e) {
-                    thrownExceptions.add(e);
-                }
-            }
-        });
-        helperThread.start();
+        moduleManager.stop(strategyURN);
         // wait until the strategy enters "STOPPING"
         MarketDataFeedTestBase.wait(new Callable<Boolean>(){
             @Override
@@ -922,7 +893,7 @@ public class StrategyModuleTest
                     throws Exception
             {
                 return getStatus(strategyURN).equals(STOPPING) &&
-                                 AbstractRunningStrategy.getProperty("onStopBegins") != null;
+                       AbstractRunningStrategy.getProperty("onStopBegins") != null;
             }
         });
         // strategy is now looping
@@ -944,10 +915,9 @@ public class StrategyModuleTest
             }
         };
         // test starting
-        new ExpectedFailure<ModuleStateException>(MODULE_NOT_STARTED_STATE_INCORRECT,
-                strategyURN.toString(),
-                ExpectedFailure.IGNORE,
-                ExpectedFailure.IGNORE) {
+        new ExpectedFailure<ModuleStateException>(STRATEGY_STILL_RUNNING,
+                                                  strategy.toString(),
+                                                  strategy.getStatus()) {
             @Override
             protected void run()
                 throws Exception
@@ -958,8 +928,6 @@ public class StrategyModuleTest
         // let the strategy stop
         AbstractRunningStrategy.setProperty("shouldStopLoop",
                                             "true");
-        helperThread.join();
-        assertTrue(thrownExceptions.isEmpty());
         // wait for the strategy to stop
         verifyStrategyStopped(strategyURN);
         verifyStrategyStatus(strategyURN,
@@ -967,7 +935,6 @@ public class StrategyModuleTest
         // now the strategy can start again
         moduleManager.start(strategyURN);
         verifyStrategyReady(strategyURN);
-        moduleManager.stop(strategyURN);
     }
     /**
      * Tests strategy status changes through the strategy lifecycle.

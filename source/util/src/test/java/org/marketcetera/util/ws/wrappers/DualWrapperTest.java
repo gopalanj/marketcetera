@@ -27,7 +27,7 @@ public class DualWrapperTest
             super(value);
         }
 
-        public TestWrapper() {}
+        private TestWrapper() {}
 
         @Override
         protected void toRaw()
@@ -53,7 +53,6 @@ public class DualWrapperTest
 
     @Test
     public void all()
-        throws Exception
     {
         dual(new TestWrapper(TEST_VALUE),
              new TestWrapper(TEST_VALUE),

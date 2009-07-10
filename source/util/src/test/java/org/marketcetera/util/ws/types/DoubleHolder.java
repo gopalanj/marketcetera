@@ -27,7 +27,6 @@ public class DoubleHolder
     private Double[] mArray;
 
 
-    @SuppressWarnings("unused")
     private DoubleHolder() {}
 
     public DoubleHolder

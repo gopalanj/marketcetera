@@ -26,7 +26,6 @@ public class CompSerWrapperHolder
     private CompSerWrapper[] mArray;
 
 
-    @SuppressWarnings("unused")
     private CompSerWrapperHolder() {}
     
     public CompSerWrapperHolder

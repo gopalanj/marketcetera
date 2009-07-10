@@ -13,20 +13,18 @@ import org.junit.Test;
 public class SerWrapperTest
     extends WrapperTestBase
 {
-    private static final TestInteger TEST_INTEGER=
-        new TestInteger(1);
+    private static final int[] TEST_ARRAY=
+        new int[] {1,2};
 
 
     @Test
     public void all()
-        throws Exception
     {
-        serialization(new SerWrapper<TestInteger>(TEST_INTEGER),
-                      new SerWrapper<TestInteger>(TEST_INTEGER),
-                      new SerWrapper<TestInteger>(),
-                      new SerWrapper<TestInteger>(null),
-                      "I am 1",TEST_INTEGER,
-                      new TestUnserializableInteger(1),
+        serialization(new SerWrapper<int[]>(TEST_ARRAY),
+                      new SerWrapper<int[]>(TEST_ARRAY),
+                      new SerWrapper<int[]>(),
+                      new SerWrapper<int[]>(null),
+                      "{1,2}",TEST_ARRAY,
                       SerWrapper.class.getName());
     }
 }

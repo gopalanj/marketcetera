@@ -5,7 +5,6 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.marketcetera.photon.model.marketdata.MDItem;
-import org.marketcetera.util.misc.ClassVersion;
 
 /* $License$ */
 
@@ -16,7 +15,6 @@ import org.marketcetera.util.misc.ClassVersion;
  * @version $Id$
  * @since 1.5.0
  */
-@ClassVersion("$Id$")
 public abstract class Key<T extends MDItem> {
 
 	private final String mSymbol;
@@ -27,7 +25,7 @@ public abstract class Key<T extends MDItem> {
 	 * @param symbol
 	 *            the symbol
 	 */
-	public Key(final String symbol) {
+	public Key(String symbol) {
 		Validate.notNull(symbol);
 		mSymbol = symbol;
 	}
@@ -61,7 +59,7 @@ public abstract class Key<T extends MDItem> {
 	}
 
 	@Override
-	public final boolean equals(final Object obj) {
+	public final boolean equals(Object obj) {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
@@ -85,7 +83,7 @@ public abstract class Key<T extends MDItem> {
 	 * @param otherKey
 	 *            the other key to compare with
 	 */
-	protected void refineEquals(final EqualsBuilder builder, final Key<?> otherKey) {
+	protected void refineEquals(EqualsBuilder builder, Key<?> otherKey) {
 		// no-op
 	}
 

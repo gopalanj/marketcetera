@@ -21,6 +21,7 @@ import org.marketcetera.photon.PhotonPlugin;
 import org.marketcetera.photon.PhotonPositionMarketData;
 import org.marketcetera.photon.PhotonPreferences;
 import org.marketcetera.photon.TimeOfDay;
+import org.marketcetera.photon.marketdata.MarketDataManager;
 import org.marketcetera.trade.ReportBase;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
 import org.marketcetera.util.misc.ClassVersion;
@@ -80,8 +81,8 @@ public class RetrieveTradingHistoryJob extends Job {
 					PositionEngine engine = PositionEngineFactory.createFromReportHolders(
 							tradeReportsHistory.getAllMessagesList(), new ImmutablePositionSupport(
 									ClientManager.getInstance().getPositionsAsOf(lastOccurrence)),
-							new PhotonPositionMarketData(PhotonPlugin.getDefault()
-									.getMarketDataManager().getMarketData()));
+							new PhotonPositionMarketData(MarketDataManager.getCurrent()
+									.getMarketData()));
 					PhotonPlugin.getDefault().registerPositionEngine(engine);
 				} catch (Exception e) {
 					if (e instanceof RuntimeException) {

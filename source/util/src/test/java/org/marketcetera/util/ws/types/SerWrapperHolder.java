@@ -26,7 +26,6 @@ public class SerWrapperHolder
     private SerWrapper[] mArray;
 
 
-    @SuppressWarnings("unused")
     private SerWrapperHolder() {}
 
     public SerWrapperHolder

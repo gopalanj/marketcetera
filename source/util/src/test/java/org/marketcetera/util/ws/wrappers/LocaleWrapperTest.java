@@ -20,7 +20,6 @@ public class LocaleWrapperTest
 
     @Test
     public void all()
-        throws Exception
     {
         dual(new LocaleWrapper(TEST_LOCALE),
              new LocaleWrapper(TEST_LOCALE),

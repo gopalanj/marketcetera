@@ -24,7 +24,6 @@ public enum OperatingSystem
     WINDOWS_VISTA("Windows Vista"), //$NON-NLS-1$
     MAC_OS_X("Mac OS X"), //$NON-NLS-1$
     DARWIN("Darwin"), //$NON-NLS-1$
-    FREEBSD("FreeBSD"), //$NON-NLS-1$ 
     LINUX("Linux"), //$NON-NLS-1$
     SOLARIS("SunOS"), //$NON-NLS-1$
     AIX("AIX"), //$NON-NLS-1$
@@ -165,7 +164,6 @@ public enum OperatingSystem
     {
         return ((this==DARWIN) ||
                 (this==MAC_OS_X) ||
-                (this==FREEBSD) || 
                 (this==LINUX) ||
                 (this==SOLARIS) ||
                 (this==AIX) ||

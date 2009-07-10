@@ -1,5 +1,7 @@
 package org.marketcetera.strategy;
 
+import static org.marketcetera.strategy.Status.UNSTARTED;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,7 +28,6 @@ import org.marketcetera.client.ClientModuleFactory;
 import org.marketcetera.client.ConnectionException;
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.core.Util;
-import org.marketcetera.metrics.ThreadedMetric;
 import org.marketcetera.core.notifications.Notification;
 import org.marketcetera.core.publisher.ISubscriber;
 import org.marketcetera.core.publisher.PublisherEngine;
@@ -45,6 +46,7 @@ import org.marketcetera.module.IllegalRequestParameterValue;
 import org.marketcetera.module.Module;
 import org.marketcetera.module.ModuleCreationException;
 import org.marketcetera.module.ModuleException;
+import org.marketcetera.module.ModuleStateException;
 import org.marketcetera.module.ModuleURN;
 import org.marketcetera.module.RequestID;
 import org.marketcetera.module.StopDataFlowException;
@@ -70,18 +72,6 @@ import quickfix.Message;
 
 /**
  * Strategy Agent implementation for the <code>Strategy</code> module.
- * <p>
- * Module Features
- * <table>
- * <tr><th>Capabilities</th><td>Data Emitter, Data Receiver, Data Flow Requester</td></tr>
- * <tr><th>Stops data flows</th><td>No</td></tr>
- * <tr><th>Start Operation</th><td>Plumbs all the data flows, compiles the strategy.</td></tr>
- * <tr><th>Stop Operation</th><td>Stops the strategy, unplumbs all the dataflows</td></tr>
- * <tr><th>Management Interface</th><td>{@link StrategyMXBean}</td></tr>
- * <tr><th>MX Notification</th><td>{@link AttributeChangeNotification}
- * whenever {@link #getStatus()} changes. </td></tr>
- * <tr><th>Factory</th><td>{@link StrategyModuleFactory}</td></tr>
- * </table>
  *
  * @author <a href="mailto:colin@marketcetera.com">Colin DuPlantis</a>
  * @version $Id$
@@ -156,7 +146,6 @@ final class StrategyModule
                             Object inData)
             throws UnsupportedDataTypeException, StopDataFlowException
     {
-        ThreadedMetric.event("strategy-IN");  //$NON-NLS-1$
         assertStateForReceiveData();
         SLF4JLoggerProxy.trace(StrategyModule.class,
                                "{} received {}", //$NON-NLS-1$
@@ -613,6 +602,16 @@ final class StrategyModule
         return strategy.getStatus().toString();
     }
     /* (non-Javadoc)
+     * @see org.marketcetera.strategy.StrategyMXBean#interrupt()
+     */
+    @Override
+    public void interrupt()
+    {
+        if(strategy != null) {
+            strategy.getExecutor().interrupt();
+        }
+    }
+    /* (non-Javadoc)
      * @see org.marketcetera.strategy.OutboundServicesProvider#statusChanged(org.marketcetera.strategy.Status, org.marketcetera.strategy.Status)
      */
     @Override
@@ -684,7 +683,7 @@ final class StrategyModule
     /**
      * Logs the given event. 
      *
-     * @param inEvent a <code>LogEvent</code> value
+     * @param inMessage a <code>LogEvent</code> value
      * @param inStrategy a <code>Strategy</code> value
      */
     static void log(LogEvent inEvent,
@@ -901,6 +900,16 @@ final class StrategyModule
     protected void preStart()
             throws ModuleException
     {
+        // this is a special case.  if the strategy has already been started and stopped, but the strategy is still running
+        //  either its onStart or onStop loop, both of which are run asynchronously, do not allow a new strategy to start
+        //  with the same URN.  the old one *must* finish first.
+        if(strategy != null) {
+            if(!strategy.getStatus().canChangeStatusTo(UNSTARTED)) {
+                throw new ModuleStateException(new I18NBoundMessage2P(STRATEGY_STILL_RUNNING,
+                                                                      strategy.toString(),
+                                                                      strategy.getStatus()));
+            }
+        }
         assertStateForPreStart();
         // add destination data flows, if specified by the object parameters
         synchronized(dataFlows) {
@@ -1175,7 +1184,6 @@ final class StrategyModule
            inObject instanceof OrderSingle ||
            inObject instanceof OrderCancel ||
            inObject instanceof OrderReplace) {
-            ThreadedMetric.event("strategy-OUT");  //$NON-NLS-1$
             ordersPublisher.publish(inObject);
         } else if(inObject instanceof Suggestion) {
             suggestionsPublisher.publish(inObject);

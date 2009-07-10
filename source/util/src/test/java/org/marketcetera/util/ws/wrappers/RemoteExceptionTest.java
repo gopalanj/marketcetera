@@ -1,17 +1,11 @@
 package org.marketcetera.util.ws.wrappers;
 
-import javax.jws.WebService;
-import org.apache.cxf.jaxws.JaxWsClientProxy;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.marketcetera.util.ws.stateless.StatelessClient;
-import org.marketcetera.util.ws.stateless.StatelessServer;
-import org.marketcetera.util.ws.stateless.StatelessServiceBase;
-import org.marketcetera.util.ws.stateless.StatelessServiceBaseImpl;
+import org.marketcetera.util.except.I18NException;
+import org.marketcetera.util.log.I18NBoundMessage1P;
+import org.marketcetera.util.test.TestCaseBase;
 
 import static org.junit.Assert.*;
-import static org.marketcetera.util.test.EqualityAssert.*;
 
 /**
  * @author tlerios@marketcetera.com
@@ -22,257 +16,106 @@ import static org.marketcetera.util.test.EqualityAssert.*;
 /* $License$ */
 
 public class RemoteExceptionTest
-    extends WrapperTestBase
+    extends TestCaseBase
 {
+    private static final String TEST_MESSAGE=
+        "testMessage";
+    private static final Throwable TEST_THROWABLE=
+        new CloneNotSupportedException(TEST_MESSAGE);
+    private static final I18NException TEST_I18N_THROWABLE=
+        new I18NException
+        (TEST_THROWABLE,
+         new I18NBoundMessage1P(TestMessages.EXCEPTION,TEST_MESSAGE));
+
     public static final String EXPECTED_MESSAGE=
         "Remote exception; see cause for details";
 
-    private static final String LOCAL_PROXY_SOURCE=
-        RemoteExceptionTest.class.getName();
-    private static final String JAXB_PROXY_SOURCE=
-        JaxWsClientProxy.class.getName();
-    private static final String JAVA_PROXY_SOURCE=
-        "sun.reflect.NativeConstructorAccessorImpl";
 
-
-    @WebService
-    public static interface Thrower
-        extends StatelessServiceBase
-    {
-        void throwException()
-            throws RemoteException;
-    }
-
-    public static class ThrowerImpl
-        extends StatelessServiceBaseImpl
-        implements Thrower
-    {
-        private RemoteException mException;
-
-        public void setException
-            (RemoteException exception)
-        {
-            mException=exception;
-        }
-
-        // Thrower.
-
-        @Override
-        public void throwException()
-            throws RemoteException
-        {
-            throw mException;
-        }
-    }
-
-    private static ThrowerImpl sThrower;
-    private static StatelessServer sServer;
-    private static Thrower sClient;
-
-
-    @BeforeClass
-    public static void setupRemoteExceptionTest()
-    {
-        sThrower=new ThrowerImpl();
-        sServer=new StatelessServer();
-        sServer.publish(sThrower,Thrower.class);
-        sClient=(new StatelessClient()).getService(Thrower.class);
-    }
-
-    @AfterClass
-    public static void tearDownRemoteExceptionTest()
-    {
-        sServer.stop();
-    }
-    
-
-    private RemoteException assertRoundTripJAXBEx
-        (RemoteException exception)
-    {
-        RemoteException result=null;
-        sThrower.setException(exception);
-        prepareSerWrapperFailure();
-        try {
-            sClient.throwException();
-        } catch (RemoteException ex) {
-            result=ex;
-        }
-        assertEquals(exception,result);
-        return result;
-    }
-
-    private void singleBase
+    private static void singleClient
         (RemoteException ex,
          RemoteProperties properties,
-         boolean wrapperSerFailure,
-         boolean wrapperDeSerFailure,
-         String source,
-         Throwable cause,
-         boolean proxyUsed)
+         Throwable cause)
     {
         assertEquals(EXPECTED_MESSAGE,ex.getMessage());
         assertEquals(properties,ex.getProperties());
-        if (wrapperSerFailure) {
-            assertSerWrapperSerFailure(ex.getProperties().getWrapper());
-        } else if (ex.getProperties()!=null) {
-            assertNull(ex.getProperties().getWrapper().
-                       getSerializationException());
-        }
-        if (wrapperDeSerFailure) {
-            assertSerWrapperDeSerFailure(ex.getProperties().getWrapper());
-        } else if (ex.getProperties()!=null) {
-            assertNull(ex.getProperties().getWrapper().
-                       getDeserializationException());
-        }
-        assertEquals(source,ex.getStackTrace()[0].getClassName());
-        assertThrowable(cause,ex.getCause(),proxyUsed);
+        assertEquals(cause,ex.getCause());
+        assertEquals(RemoteExceptionTest.class.getName(),
+                     ex.getStackTrace()[0].getClassName());
     }
 
-    private void singleNonSerializable
-        (RemoteException server,
-         RemoteException client,
-         String source)
-    {
-        singleBase(client,
-                   server.getProperties(),
-                   false,
-                   false,
-                   source,
-                   server.getCause(),
-                   true);
-    }
-
-    private void singleNonDeserializable
-        (RemoteException server,
-         RemoteException client,
-         String source)
-    {
-        singleBase(client,
-                   server.getProperties(),
-                   false,
-                   true,
-                   source,
-                   server.getCause(),
-                   true);
-    }
-
-    private void single
-        (RemoteException server,
-         RemoteProperties properties,
+    private static void singleServer
+        (boolean sendWrapper,
+         RemoteException server,
          Throwable cause)
-        throws Exception
     {
-        singleBase(server,properties,false,false,
-                   LOCAL_PROXY_SOURCE,cause,false);
-        singleBase(assertRoundTripJAXBEx(server),properties,false,false,
-                   JAXB_PROXY_SOURCE,cause,false);
-        singleBase(assertRoundTripJava(server),properties,false,false,
-                   JAVA_PROXY_SOURCE,cause,false);
+        RemoteProperties pServer=server.getProperties();
+        RemoteProperties pClient=new RemoteProperties();
+        if (sendWrapper) {
+            pClient.setWrapper(pServer.getWrapper());
+        }
+        pClient.setServerMessage(pServer.getServerMessage());
+        pClient.setTraceCapture(pServer.getTraceCapture());
+        pClient.setServerString(pServer.getServerString());
+        RemoteException client=new RemoteException();
+        client.setProperties(pClient);
+        singleClient(client,pClient,cause);
+    }
+
+    private static void singleServerWrapper
+        (RemoteException server,
+         Throwable cause)
+    {
+        singleServer(true,server,cause);
+    }
+
+    private static void singleServerNoWrapper
+        (RemoteException server,
+         Throwable serverCause)
+    {
+        RemoteProperties p=new RemoteProperties(serverCause);
+        singleServer
+            (false,server,
+             new RemoteProxyException
+             (p.getServerMessage(),p.getTraceCapture(),p.getServerString()));
     }
 
 
     @Test
-    public void basics()
-        throws Exception
+    public void client()
     {
-        assertEquality(new RemoteException(),
-                       new RemoteException(),
-                       new RemoteException(TEST_THROWABLE),
-                       new RemoteException(TEST_I18N_THROWABLE));
-        single(new RemoteException(),
-               null,
-               null);
-
-        assertEquality(new RemoteException(null),
-                       new RemoteException(null),
-                       new RemoteException(TEST_THROWABLE),
-                       new RemoteException(TEST_I18N_THROWABLE));
-        single(new RemoteException(null),
-               null,
-               null);
-        assertEquals(new RemoteException(),new RemoteException(null));
-
-        assertEquality(new RemoteException(TEST_THROWABLE),
-                       new RemoteException(TEST_THROWABLE),
-                       new RemoteException(),
-                       new RemoteException(null),
-                       new RemoteException(TEST_I18N_THROWABLE));
-        single(new RemoteException(TEST_THROWABLE),
-               new RemoteProperties(TEST_THROWABLE),
-               TEST_THROWABLE);
-
-        assertEquality(new RemoteException(TEST_I18N_THROWABLE),
-                       new RemoteException(TEST_I18N_THROWABLE),
-                       new RemoteException(),
-                       new RemoteException(null),
-                       new RemoteException(TEST_THROWABLE));
-        single(new RemoteException(TEST_I18N_THROWABLE),
-               new RemoteProperties(TEST_I18N_THROWABLE),
-               TEST_I18N_THROWABLE);
+        singleClient
+            (new RemoteException(),
+             null,
+             null);
+        singleClient
+            (new RemoteException(TEST_THROWABLE),
+             new RemoteProperties(TEST_THROWABLE),
+             TEST_THROWABLE);
+        singleClient
+            (new RemoteException(TEST_I18N_THROWABLE),
+             new RemoteProperties(TEST_I18N_THROWABLE),
+             TEST_I18N_THROWABLE);
     }
 
     @Test
-    public void setters()
+    public void serverWrapper()
     {
-        RemoteException ex=new RemoteException();
-
-        RemoteProperties p=new RemoteProperties();
-        ex.setProperties(p);
-        assertEquals(p,ex.getProperties());
-
-        ex.setProperties(null);
-        assertNull(ex.getProperties());
+        singleServerWrapper
+            (new RemoteException(TEST_THROWABLE),
+             TEST_THROWABLE);
+        singleServerWrapper
+            (new RemoteException(TEST_I18N_THROWABLE),
+             TEST_I18N_THROWABLE);
     }
 
     @Test
-    public void nonSerializableThrowable()
-        throws Exception
+    public void serverNoWrapper()
     {
-        prepareSerWrapperFailure();
-        RemoteException server=new RemoteException(TEST_NONSER_THROWABLE);
-        assertEquality(server,
-                       new RemoteException(TEST_NONSER_THROWABLE),
-                       new RemoteException(),
-                       new RemoteException(null),
-                       new RemoteException(TEST_THROWABLE),
-                       new RemoteException(TEST_I18N_THROWABLE));
-        singleBase(server,
-                   new RemoteProperties(TEST_NONSER_THROWABLE),
-                   true,
-                   false,
-                   LOCAL_PROXY_SOURCE,
-                   TEST_NONSER_THROWABLE,
-                   false);
-
-        singleNonSerializable
-            (server,assertRoundTripJAXBEx(server),JAXB_PROXY_SOURCE);
-        singleNonSerializable
-            (server,assertRoundTripJava(server),JAVA_PROXY_SOURCE);
-    }
-
-    @Test
-    public void nonDeserializableThrowable()
-        throws Exception
-    {
-        RemoteException server=new RemoteException(TEST_NONDESER_THROWABLE);
-        assertEquality(server,
-                       new RemoteException(TEST_NONDESER_THROWABLE),
-                       new RemoteException(),
-                       new RemoteException(null),
-                       new RemoteException(TEST_THROWABLE),
-                       new RemoteException(TEST_I18N_THROWABLE),
-                       new RemoteException(TEST_NONSER_THROWABLE));
-        singleBase(server,
-                   new RemoteProperties(TEST_NONDESER_THROWABLE),
-                   false,
-                   false,
-                   LOCAL_PROXY_SOURCE,
-                   TEST_NONDESER_THROWABLE,
-                   false);
-
-        singleNonDeserializable
-            (server,assertRoundTripJAXBEx(server),JAXB_PROXY_SOURCE);
-        singleNonDeserializable
-            (server,assertRoundTripJava(server),JAVA_PROXY_SOURCE);
+        singleServerNoWrapper
+            (new RemoteException(TEST_THROWABLE),
+             TEST_THROWABLE);
+        singleServerNoWrapper
+            (new RemoteException(TEST_I18N_THROWABLE),
+             TEST_I18N_THROWABLE);
     }
 }

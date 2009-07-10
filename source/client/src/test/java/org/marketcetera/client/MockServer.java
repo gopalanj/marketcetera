@@ -207,8 +207,7 @@ public class MockServer {
                     getHandler().addToSend(Factory.getInstance().createOrderCancelReject(
                         message, new BrokerID("default"), Originator.Server, null, null));
                 } else {
-                    getHandler().addToSend(Factory.getInstance().createFIXResponse(
-                        message, new BrokerID("default"), Originator.Server, null, null));
+                    SLF4JLoggerProxy.warn(this, "Ignoring:{}", message);
                 }
             } catch (MessageCreationException e) {
                 SLF4JLoggerProxy.warn(this, "Ignoring Error", e);

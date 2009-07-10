@@ -27,7 +27,6 @@ public class BooleanHolder
     private Boolean[] mArray;
 
 
-    @SuppressWarnings("unused")
     private BooleanHolder() {}
 
     public BooleanHolder

@@ -8,17 +8,8 @@ import org.marketcetera.module.ModuleURN;
 /* $License$ */
 /**
  * Provider that will emit data contained in CSV as a series of maps.
- * <p>
- * The factory has the following characteristics.
- * <table>
- * <tr><th>Provider URN:</th><td><code>metc:csv:system</code></td></tr>
- * <tr><th>Cardinality:</th><td>Singleton</td></tr>
- * <tr><th>InstanceURN:</th><td><code>metc:csv:system:single</code></td></tr>
- * <tr><th>Auto-Instantiated:</th><td>No</td></tr>
- * <tr><th>Auto-Started:</th><td>Yes</td></tr>
- * <tr><th>Instantiation Arguments:</th><td>None</td></tr>
- * <tr><th>Module Type</th><td>{@link CSVEmitter}</td></tr>
- * </table>
+ * This provider creates a singleton module instance.
+ * The singleton instance is auto-instantiated and auto-started.
  *
  * @see CSVEmitter
  * @author anshul@marketcetera.com

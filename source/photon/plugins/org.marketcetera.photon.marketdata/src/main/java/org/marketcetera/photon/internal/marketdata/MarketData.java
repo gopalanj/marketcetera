@@ -25,20 +25,7 @@ import com.google.inject.Inject;
 /* $License$ */
 
 /**
- * This class is the central manager of market data. Individual sub-managers are used for each data
- * type, but all requests come through this class. Market data is returned in the form of a
- * reference that can be disposed when no longer needed. This allow data flows to be shared so at
- * most one is active for any given data request. Data flows are started after the first request and
- * stopped after the last reference is disposed.
- * <p>
- * The sub-managers all extend {@link DataFlowManager}:
- * <ul>
- * <li>{@link LatestTickManager} - for latest tick data</li>
- * <li>{@link TopOfBookManager} - for top of book data</li>
- * <li>{@link MarketstatManager} - for market statistic data</li>
- * <li>{@link DepthOfBookManager} - for depth of book data (separate instances manages each of Level
- * 2, TotalView, and OpenBook data)</li>
- * </ul>
+ * Manages references to market data items, starting and stopping data flows as needed.
  * 
  * @author <a href="mailto:will@marketcetera.com">Will Horn</a>
  * @version $Id$
@@ -47,6 +34,13 @@ import com.google.inject.Inject;
 @ClassVersion("$Id$")
 public class MarketData implements IMarketData {
 
+	/*
+	 * This class is the central manager of market data. Individual sub-managers are used for each 
+	 * data type, but all requests come through this class. Market data is returned in the form
+	 * of a reference that can be disposed when no longer needed.  This allow data flows to be
+	 * shared so at most one is active for any given data key.
+	 */
+	
 	private final Multiset<Key<? extends MDItem>> mReferences = HashMultiset.create();
 	private final ILatestTickManager mLatestTickManager;
 	private final ITopOfBookManager mTopOfBookManager;
@@ -72,9 +66,9 @@ public class MarketData implements IMarketData {
 	 *             needed capability set
 	 */
 	@Inject
-	public MarketData(final ILatestTickManager latestTickManager,
-			final ITopOfBookManager topOfBookManager, final IMarketstatManager marketstatManager,
-			final IDepthOfBookManager.Factory depthOfBookManagerFactory) {
+	public MarketData(ILatestTickManager latestTickManager, ITopOfBookManager topOfBookManager,
+			IMarketstatManager marketstatManager,
+			IDepthOfBookManager.Factory depthOfBookManagerFactory) {
 		Validate.noNullElements(new Object[] { latestTickManager, topOfBookManager,
 				marketstatManager, depthOfBookManagerFactory });
 		mLatestTickManager = latestTickManager;
@@ -97,7 +91,7 @@ public class MarketData implements IMarketData {
 	 * @throws IllegalArgumentException
 	 *             if feed is null
 	 */
-	public void setSourceFeed(final IMarketDataFeed feed) {
+	public void setSourceFeed(IMarketDataFeed feed) {
 		mLatestTickManager.setSourceFeed(feed);
 		mTopOfBookManager.setSourceFeed(feed);
 		mMarketstatManager.setSourceFeed(feed);
@@ -107,33 +101,33 @@ public class MarketData implements IMarketData {
 	}
 
 	@Override
-	public IMarketDataReference<MDLatestTick> getLatestTick(final String symbol) {
+	public IMarketDataReference<MDLatestTick> getLatestTick(String symbol) {
 		Validate.notNull(symbol);
-		return new Reference<MDLatestTick, LatestTickKey>(mLatestTickManager, new LatestTickKey(
-				symbol));
+		return new Reference<MDLatestTick, LatestTickKey>(mLatestTickManager,
+					new LatestTickKey(symbol));
 	}
 
 	@Override
-	public IMarketDataReference<MDTopOfBook> getTopOfBook(final String symbol) {
+	public IMarketDataReference<MDTopOfBook> getTopOfBook(String symbol) {
 		Validate.notNull(symbol);
-		return new Reference<MDTopOfBook, TopOfBookKey>(mTopOfBookManager, new TopOfBookKey(symbol));
+		return new Reference<MDTopOfBook, TopOfBookKey>(mTopOfBookManager, new TopOfBookKey(
+					symbol));
 	}
 
 	@Override
-	public IMarketDataReference<MDMarketstat> getMarketstat(final String symbol) {
+	public IMarketDataReference<MDMarketstat> getMarketstat(String symbol) {
 		Validate.notNull(symbol);
-		return new Reference<MDMarketstat, MarketstatKey>(mMarketstatManager, new MarketstatKey(
-				symbol));
+		return new Reference<MDMarketstat, MarketstatKey>(mMarketstatManager,
+					new MarketstatKey(symbol));
 	}
 
 	@Override
-	public IMarketDataReference<MDDepthOfBook> getDepthOfBook(final String symbol,
-			final Content product) {
+	public IMarketDataReference<MDDepthOfBook> getDepthOfBook(String symbol, Content product) {
 		Validate.noNullElements(new Object[] { symbol, product });
 		Validate.isTrue(DepthOfBookKey.VALID_PRODUCTS.contains(product));
 		IDepthOfBookManager manager = mContentToDepthManager.get(product);
 		return new Reference<MDDepthOfBook, DepthOfBookKey>(manager, new DepthOfBookKey(symbol,
-				product));
+					product));
 	}
 
 	/**
@@ -145,9 +139,9 @@ public class MarketData implements IMarketData {
 		private final IDataFlowManager<? extends T, K> mManager;
 		private final T mItem;
 		private final K mKey;
-		private final AtomicBoolean mDisposed = new AtomicBoolean();
+		private AtomicBoolean mDisposed = new AtomicBoolean();
 
-		public Reference(final IDataFlowManager<? extends T, K> manager, final K key) {
+		public Reference(IDataFlowManager<? extends T, K> manager, K key) {
 			assert manager != null && key != null;
 			mManager = manager;
 			synchronized (mReferences) {
