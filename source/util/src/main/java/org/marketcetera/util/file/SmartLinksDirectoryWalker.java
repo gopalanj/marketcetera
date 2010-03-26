@@ -46,10 +46,6 @@ public abstract class SmartLinksDirectoryWalker
      * Constructor mirroring superclass constructor.
      *
      * @param followLinks True if links should be followed.
-     * @param filter The filter to apply. It may be null, meaning
-     * visit all files.
-     * @param depthLimit Controls to what depth the hierarchy is
-     * navigated. Less than 0 means unlimited.
      *
      * @see DirectoryWalker#DirectoryWalker(FileFilter,int)
      */
@@ -67,12 +63,6 @@ public abstract class SmartLinksDirectoryWalker
      * Constructor mirroring superclass constructor.
      *
      * @param followLinks True if links should be followed.
-     * @param directoryFilter The filter to apply to directories. It
-     * may be null, meaning visit all directories.
-     * @param fileFilter The filter to apply to files. It may be null,
-     * meaning visit all directories.
-     * @param depthLimit Controls to what depth the hierarchy is
-     * navigated. Less than 0 means unlimited.
      *
      * @see DirectoryWalker#DirectoryWalker(IOFileFilter,IOFileFilter,int)
      */

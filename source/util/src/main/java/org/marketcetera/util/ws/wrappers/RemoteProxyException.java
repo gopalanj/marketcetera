@@ -31,7 +31,6 @@ public class RemoteProxyException
 
     private final String[] mTraceCapture;
     private final String mServerString;
-    private final String mServerName;
 
 
     // CONSTRUCTORS.
@@ -44,19 +43,16 @@ public class RemoteProxyException
      * @param traceCapture The stack trace capture, which may be null.
      * @param serverString The server string representation, which may
      * be null.
-     * @param serverName The server class name, which may be null.
      */
 
     public RemoteProxyException
         (String message,
          String[] traceCapture,
-         String serverString,
-         String serverName)
+         String serverString)
     {
         super(message);
         mTraceCapture=traceCapture;
         mServerString=serverString;
-        mServerName=serverName;
     }
 
 
@@ -71,17 +67,6 @@ public class RemoteProxyException
     public String[] getTraceCapture()
     {
         return mTraceCapture;
-    }
-
-    /**
-     * Returns the receiver's server class name.
-     *
-     * @return The name, which may be null.
-     */
-
-    public String getServerName()
-    {
-        return mServerName;
     }
 
 
@@ -139,8 +124,7 @@ public class RemoteProxyException
     {
         return (ObjectUtils.hashCode(getMessage())+
                 ArrayUtils.hashCode(getTraceCapture())+
-                ObjectUtils.hashCode(toString())+
-                ObjectUtils.hashCode(getServerName()));
+                ObjectUtils.hashCode(toString()));
     }
 
     @Override
@@ -156,7 +140,6 @@ public class RemoteProxyException
         RemoteProxyException o=(RemoteProxyException)other;
         return (ObjectUtils.equals(getMessage(),o.getMessage()) &&
                 ArrayUtils.isEquals(getTraceCapture(),o.getTraceCapture()) &&
-                ObjectUtils.equals(toString(),o.toString()) &&
-                ObjectUtils.equals(getServerName(),o.getServerName()));
+                ObjectUtils.equals(toString(),o.toString()));
     }
 }

@@ -22,14 +22,6 @@ public class MockAuthenticator
     implements Authenticator
 {
 
-    // CLASS DATA.
-
-    static String VERSION_MISMATCH_USER=
-        "VERSION_MISMATCH_USER";
-    static String VERSION_MISMATCH_SERVER_VERSION=
-        "VERSION_MISMATCH_SERVER_VERSION";
-
-
     // Authenticator.
 
     @Override
@@ -37,13 +29,7 @@ public class MockAuthenticator
         (StatelessClientContext context,
          String user,
          char[] password)
-        throws IncompatibleComponentsException
     {
-        if (VERSION_MISMATCH_USER.equals(user)) {
-            throw new IncompatibleComponentsException
-                (TestMessages.MOCK_VERSION_MISMATCH,
-                 VERSION_MISMATCH_SERVER_VERSION);
-        }
         return ObjectUtils.equals(user,String.valueOf(password));
     }
 }

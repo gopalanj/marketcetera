@@ -1,7 +1,6 @@
 package org.marketcetera.marketdata.bogus;
 
 import static org.marketcetera.marketdata.Capability.*;
-import static org.marketcetera.marketdata.bogus.Messages.UNSUPPORTED_OPTION_SPECIFICATION;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -10,11 +9,12 @@ import org.marketcetera.core.NoMoreIDsException;
 import org.marketcetera.core.publisher.ISubscriber;
 import org.marketcetera.event.Event;
 import org.marketcetera.marketdata.*;
+import org.marketcetera.marketdata.MarketDataRequest.AssetClass;
+import org.marketcetera.marketdata.MarketDataRequest.Content;
 import org.marketcetera.options.OptionUtils;
 import org.marketcetera.trade.Equity;
 import org.marketcetera.trade.Instrument;
 import org.marketcetera.trade.Option;
-import org.marketcetera.util.log.I18NBoundMessage1P;
 import org.marketcetera.util.log.SLF4JLoggerProxy;
 import org.marketcetera.util.misc.ClassVersion;
 
@@ -252,11 +252,9 @@ public class BogusFeed
          * @param inRequest a <code>MarketDataRequest</code> value
          * @param inParentFeed a <code>BogusFeed</code> value
          * @return a <code>String</code> value
-         * @throws FeedException if the request could not be executed 
          */
         private static String execute(MarketDataRequest inRequest,
                                       BogusFeed inParentFeed)
-                throws FeedException
         {
             Request request = new Request(inRequest,
                                           inParentFeed);
@@ -324,45 +322,36 @@ public class BogusFeed
          * Executes the market data request associated with this object.
          * 
          * @throws IllegalStateException if this method has already been executed for this object
-         * @throws FeedException if the request is for Option asset class and contains a symbol that is not OSI-compliant
+         * @throws IllegalArgumentException if the request is for Option asset class and contains a symbol that is not OSI-compliant
          */
         private synchronized void execute()
-                throws FeedException
         {
             if(executed) {
                 throw new IllegalStateException();
             }
             try {
                 List<ExchangeRequest> exchangeRequests = new ArrayList<ExchangeRequest>();
-                Set<String> symbols = marketDataRequest.getSymbols(); 
-                if(!symbols.isEmpty()) {
+                if(marketDataRequest.getSymbols().length != 0) {
                     if(marketDataRequest.getAssetClass() == AssetClass.EQUITY) {
-                        for(String symbol : symbols) {
+                        for(String symbol : marketDataRequest.getSymbols()) {
                             exchangeRequests.add(ExchangeRequestBuilder.newRequest().withInstrument(new Equity(symbol)).create());
                         }
                     } else if(marketDataRequest.getAssetClass() == AssetClass.OPTION) {
-                        for(String symbol : symbols) {
+                        for(String symbol : marketDataRequest.getSymbols()) {
                             // this assumes that the symbol is an OSI-compliant symbol, otherwise, there's no way to parse it
                             //  deterministically.  if it's not OSI-compliant, an IAE will be thrown, which puts the kaibosh on
                             //  the whole request.  this is a limitation ironed into the Bogus adapter
-                            try {
-                                Option basicOption = OptionUtils.getOsiOptionFromString(symbol);
-                                exchangeRequests.add(ExchangeRequestBuilder.newRequest().withInstrument(basicOption)
-                                                                                        .withUnderlyingInstrument(getUnderlyingInstrument(basicOption.getSymbol())).create());
-                            } catch (IllegalArgumentException e) {
-                                throw new FeedException(e,
-                                                        new I18NBoundMessage1P(UNSUPPORTED_OPTION_SPECIFICATION,
-                                                                               symbol));
-                            }
+                            Option basicOption = OptionUtils.getOsiOptionFromString(symbol);
+                            exchangeRequests.add(ExchangeRequestBuilder.newRequest().withInstrument(basicOption)
+                                                                                    .withUnderlyingInstrument(getUnderlyingInstrument(basicOption.getSymbol())).create());
                         }
                     } else {
                         // this is a new asset class and there is no support for it here
-                        throw new UnsupportedOperationException();
+                        assert(false);
                     }
                 } else {
                     // marketDataRequest has no symbols - should then have underlyingsymbols instead
-                    Set<String> underlyingSymbols = marketDataRequest.getUnderlyingSymbols();
-                    assert(!underlyingSymbols.isEmpty());
+                    assert(marketDataRequest.getUnderlyingSymbols().length != 0);
                     for(String symbol : marketDataRequest.getUnderlyingSymbols()) {
                         exchangeRequests.add(ExchangeRequestBuilder.newRequest().withUnderlyingInstrument(getUnderlyingInstrument(symbol)).create());
                     }

@@ -1,5 +1,3 @@
-package sample;
-
 import org.marketcetera.strategy.java.Strategy;
 
 

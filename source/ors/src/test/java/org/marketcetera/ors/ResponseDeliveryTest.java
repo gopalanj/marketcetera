@@ -1,18 +1,18 @@
 package org.marketcetera.ors;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Locale;
+import java.math.BigDecimal;
 import org.apache.log4j.Level;
 import org.junit.Test;
 import org.marketcetera.event.HasFIXMessage;
 import org.marketcetera.ors.filters.SimpleMessageModifierManager;
 import org.marketcetera.trade.*;
 import org.marketcetera.util.log.ActiveLocale;
-import quickfix.FieldNotFound;
 import quickfix.Message;
+import quickfix.FieldNotFound;
+import quickfix.field.ClearingFirm;
 import quickfix.field.OrdStatus;
-import quickfix.field.SecurityDesc;
 import quickfix.field.Side;
 
 import static org.junit.Assert.*;
@@ -45,7 +45,7 @@ public class ResponseDeliveryTest
 
         Message msg=createEmptyExecReport();
         completeExecReport(msg);
-        assertFalse(msg.isSetField(SecurityDesc.FIELD));
+        assertFalse(msg.isSetField(ClearingFirm.FIELD));
         emulateFirstBrokerResponse(msg);
         ExecutionReport er=Factory.getInstance().createExecutionReport
             (msg,getFirstBrokerID(),Originator.Broker,null,null);
@@ -53,13 +53,13 @@ public class ResponseDeliveryTest
             (ExecutionReport)(c.getReportListener().getNext());
         assertExecReportEquals(er,err);
         // Test response message modifiers.
-        assertEquals(SimpleMessageModifierManager.SECURITY_DESC,
+        assertEquals(SimpleMessageModifierManager.FIRM,
                      ((HasFIXMessage)err).getMessage().
-                     getString(SecurityDesc.FIELD));
+                     getString(ClearingFirm.FIELD));
         
         msg=createEmptyOrderCancelReject();
         completeOrderCancelReject(msg);
-        assertFalse(msg.isSetField(SecurityDesc.FIELD));
+        assertFalse(msg.isSetField(ClearingFirm.FIELD));
         emulateFirstBrokerResponse(msg);
         OrderCancelReject ocr=Factory.getInstance().createOrderCancelReject
             (msg,getFirstBrokerID(),Originator.Broker,null,null);
@@ -67,12 +67,12 @@ public class ResponseDeliveryTest
             (OrderCancelReject)(c.getReportListener().getNext());
         assertCancelRejectEquals(ocr,ocrr);
         // Test response message modifiers.
-        assertEquals(SimpleMessageModifierManager.SECURITY_DESC,
+        assertEquals(SimpleMessageModifierManager.FIRM,
                      ((HasFIXMessage)ocrr).getMessage().
-                     getString(SecurityDesc.FIELD));
+                     getString(ClearingFirm.FIELD));
 
         msg=createEmptyBusinessMessageReject();
-        assertFalse(msg.isSetField(SecurityDesc.FIELD));
+        assertFalse(msg.isSetField(ClearingFirm.FIELD));
         setupTestCaseBase();
         ActiveLocale.setProcessLocale(Locale.ROOT);
         setDefaultLevel(Level.OFF);
@@ -85,7 +85,7 @@ public class ResponseDeliveryTest
             (msg,getFirstBrokerID(),Originator.Broker,null,null);
         // Test response message modifiers.
         ((HasFIXMessage)response).getMessage().setField
-            (new SecurityDesc(SimpleMessageModifierManager.SECURITY_DESC));
+            (new ClearingFirm(SimpleMessageModifierManager.FIRM));
         assertSomeEvent
             (Level.WARN,TEST_CATEGORY,
              "Received a fix report that was neither an execution report "+

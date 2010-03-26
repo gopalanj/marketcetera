@@ -10,7 +10,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.*;
 
-import org.marketcetera.client.*;
+import org.marketcetera.client.Client;
+import org.marketcetera.client.ClientManager;
+import org.marketcetera.client.ClientModuleFactory;
+import org.marketcetera.client.ConnectionException;
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.core.Util;
 import org.marketcetera.core.notifications.Notification;
@@ -171,13 +174,7 @@ final class StrategyModule
         }
         int requestID = counter.incrementAndGet();
         try {
-            ModuleURN marketDataURN = constructMarketDataUrn(inRequest.getProvider());
-            SLF4JLoggerProxy.debug(StrategyModule.class,
-                                   "{} received a market data request {} for data from {}", //$NON-NLS-1$
-                                   strategy,
-                                   inRequest,
-                                   marketDataURN);
-            DataFlowID dataFlowID = dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(marketDataURN,
+            DataFlowID dataFlowID = dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(constructMarketDataUrn(inRequest.getProvider()),
                                                                                                        inRequest),
                                                                                        new DataRequest(getURN()) },
                                                                    false);
@@ -222,18 +219,10 @@ final class StrategyModule
         int requestID = counter.incrementAndGet();
         // construct a request that connects the provider to the cep query
         try {
-            ModuleURN marketDataURN = constructMarketDataUrn(inRequest.getProvider());
-            ModuleURN cepDataURN = constructCepUrn(inCEPSource,
-                                                   inNamespace);
-            SLF4JLoggerProxy.debug(StrategyModule.class,
-                                   "{} received a processed market data request {} for market data from {} via {}", //$NON-NLS-1$
-                                   strategy,
-                                   inRequest,
-                                   marketDataURN,
-                                   cepDataURN);
-            DataFlowID dataFlowID = dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(marketDataURN,
+            DataFlowID dataFlowID = dataFlowSupport.createDataFlow(new DataRequest[] { new DataRequest(constructMarketDataUrn(inRequest.getProvider()),
                                                                                                        inRequest),
-                                                                                       new DataRequest(cepDataURN,
+                                                                                       new DataRequest(constructCepUrn(inCEPSource,
+                                                                                                                       inNamespace),
                                                                                                        determineCepStatements(inCEPSource,
                                                                                                                               inStatements)),
                                                                                        new DataRequest(getURN()) },
@@ -581,9 +570,10 @@ final class StrategyModule
      */
     @Override
     public List<BrokerStatus> getBrokers()
-        throws ConnectionException, ClientInitException
+        throws ConnectionException
     {
-        return clientFactory.getClient().getBrokersStatus().getBrokers();
+        assert(orsClient != null);
+        return orsClient.getBrokersStatus().getBrokers();
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.InboundServicesProvider#getEquityPositionAsOf(java.util.Date, org.marketcetera.trade.Equity)
@@ -591,19 +581,21 @@ final class StrategyModule
     @Override
     public BigDecimal getPositionAsOf(Date inDate,
                                       Equity inEquity)
-        throws ConnectionException, ClientInitException
+        throws ConnectionException
     {
-        return clientFactory.getClient().getEquityPositionAsOf(inDate,
-                                                               inEquity);
+        assert(orsClient != null);
+        return orsClient.getEquityPositionAsOf(inDate,
+                                         inEquity);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.ServicesProvider#getAllOptionPositionsAsOf(java.util.Date)
      */
     @Override
     public Map<PositionKey<Option>, BigDecimal> getAllOptionPositionsAsOf(Date inDate)
-            throws ConnectionException, ClientInitException
+            throws ConnectionException
     {
-        return clientFactory.getClient().getAllOptionPositionsAsOf(inDate);
+        assert(orsClient != null);
+        return orsClient.getAllOptionPositionsAsOf(inDate);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.ServicesProvider#getOptionPositionAsOf(java.util.Date, org.marketcetera.trade.Option)
@@ -611,10 +603,11 @@ final class StrategyModule
     @Override
     public BigDecimal getOptionPositionAsOf(Date inDate,
                                             Option inOption)
-            throws ConnectionException, ClientInitException
+            throws ConnectionException
     {
-        return clientFactory.getClient().getOptionPositionAsOf(inDate,
-                                                               inOption);
+        assert(orsClient != null);
+        return orsClient.getOptionPositionAsOf(inDate,
+                                               inOption);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.ServicesProvider#getOptionPositionsAsOf(java.util.Date, java.lang.String[])
@@ -622,37 +615,41 @@ final class StrategyModule
     @Override
     public Map<PositionKey<Option>, BigDecimal> getOptionPositionsAsOf(Date inDate,
                                                                        String... inOptionRoots)
-            throws ConnectionException, ClientInitException
+            throws ConnectionException
     {
-        return clientFactory.getClient().getOptionPositionsAsOf(inDate,
-                                                                inOptionRoots);
+        assert(orsClient != null);
+        return orsClient.getOptionPositionsAsOf(inDate,
+                                                inOptionRoots);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.ServicesProvider#getOptionRoots(java.lang.String)
      */
     @Override
     public Collection<String> getOptionRoots(String inUnderlying)
-            throws ConnectionException, ClientInitException
+            throws ConnectionException
     {
-        return clientFactory.getClient().getOptionRoots(inUnderlying);
+        assert(orsClient != null);
+        return orsClient.getOptionRoots(inUnderlying);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.ServicesProvider#getAllPositionsAsOf(java.util.Date)
      */
     @Override
     public Map<PositionKey<Equity>, BigDecimal> getAllPositionsAsOf(Date inDate)
-            throws ConnectionException, ClientInitException
+            throws ConnectionException
     {
-        return clientFactory.getClient().getAllEquityPositionsAsOf(inDate);
+        assert(orsClient != null);
+        return orsClient.getAllEquityPositionsAsOf(inDate);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.ServicesProvider#getUnderlying(java.lang.String)
      */
     @Override
     public String getUnderlying(String inOptionRoot)
-            throws ConnectionException, ClientInitException
+            throws ConnectionException
     {
-        return clientFactory.getClient().getUnderlying(inOptionRoot);
+        assert(orsClient != null);
+        return orsClient.getUnderlying(inOptionRoot);
     }
     /* (non-Javadoc)
      * @see org.marketcetera.strategy.StrategyMXBean#getStatus()
@@ -1008,6 +1005,7 @@ final class StrategyModule
             }
         }
         try {
+            initializeClient();
             strategy = new StrategyImpl(name,
                                         getURN().getValue(),
                                         type,
@@ -1257,6 +1255,20 @@ final class StrategyModule
         allPublisher.publish(inObject);
     }
     /**
+     * Prepares the <code>orsClient</code> to be used. 
+     */
+    private void initializeClient()
+    {
+        try {
+            if(orsClient == null) {
+                orsClient = ClientManager.getInstance();
+            }
+        } catch (Exception e) {
+            CANNOT_INITIALIZE_CLIENT.warn(StrategyModule.class,
+                                          e);
+        }
+    }
+    /**
      * Cancels the given request whether it's a market data request, a cep request,
      * or both.
      *
@@ -1388,16 +1400,9 @@ final class StrategyModule
      */
     private DataFlowID orsFlow;
     /**
-     * default method for connecting to the client
+     * client to use for services
      */
-    static volatile ClientFactory clientFactory = new ClientFactory() {
-        @Override
-        public Client getClient()
-                throws ClientInitException
-        {
-            return ClientManager.getInstance();
-        }
-    };
+    static Client orsClient; // this is non-final and non-private in order to provide a loophole for testing
     /**
      * counter used to guarantee unique identifiers
      */
@@ -1533,24 +1538,5 @@ final class StrategyModule
                 throw new IllegalArgumentException(); // this is a development-time exception to indicate the logic needs to be expanded because of a new request type
             }
         }
-    }
-    /**
-     * Constructs a <code>Client</code> connection.
-     *
-     * @author <a href="mailto:colin@marketcetera.com">Colin DuPlantis</a>
-     * @version $Id$
-     * @since $Release$
-     */
-    @ClassVersion("$Id$")
-    static interface ClientFactory
-    {
-        /**
-         * Returns the <code>Client</code> instance to use to connect to the server. 
-         *
-         * @return a <code>Client</code> value
-         * @throws ClientInitException if the client could not be created
-         */
-        Client getClient()
-                throws ClientInitException;
     }
 }

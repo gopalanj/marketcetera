@@ -131,7 +131,7 @@ public abstract class AbstractMarketDataModule<T extends MarketDataFeedToken,
         MarketDataRequest request = null;
         if(requestPayload instanceof String) {
             try {
-                request = MarketDataRequestBuilder.newRequestFromString((String)requestPayload);
+                request = MarketDataRequest.newRequestFromString((String)requestPayload);
             } catch (Exception e) {
                 throw new IllegalRequestParameterValue(instanceURN,
                                                        requestPayload,

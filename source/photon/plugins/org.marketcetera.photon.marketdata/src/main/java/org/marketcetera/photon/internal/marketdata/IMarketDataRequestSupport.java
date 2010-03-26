@@ -1,7 +1,6 @@
 package org.marketcetera.photon.internal.marketdata;
 
 import org.marketcetera.marketdata.MarketDataRequest;
-import org.marketcetera.marketdata.MarketDataRequestBuilder;
 import org.marketcetera.trade.Instrument;
 import org.marketcetera.util.misc.ClassVersion;
 
@@ -21,13 +20,13 @@ import com.google.inject.ImplementedBy;
 public interface IMarketDataRequestSupport {
 
     /**
-     * Initializes a {@link MarketDataRequestBuilder} for the provided instrument.
+     * Initializes a {@link MarketDataRequest} for the provided instrument.
      * 
      * @param instrument
      *            the instrument
-     * @return a {@link MarketDataRequestBuilder} with instrument information
+     * @return a {@link MarketDataRequest} with instrument information
      */
-    MarketDataRequestBuilder initializeRequest(Instrument instrument);
+    MarketDataRequest initializeRequest(Instrument instrument);
 
     /**
      * Returns whether fine grained market data is supported for options.

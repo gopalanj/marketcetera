@@ -17,7 +17,7 @@ import quickfix.Session;
 @ClassVersion("$Id$") //$NON-NLS-1$
 public class FIXMessageSender {
     /** To be overridden by unit tests for capturing outgoing messages */
-    public void sendOutgoingMessage(Message inMsg, SessionID targetID) throws SessionNotFound
+    protected void sendOutgoingMessage(Message inMsg, SessionID targetID) throws SessionNotFound
     {
         Session.sendToTarget(inMsg, targetID);
     }

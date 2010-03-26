@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.marketcetera.client.ClientInitException;
 import org.marketcetera.client.ConnectionException;
 import org.marketcetera.client.brokers.BrokerStatus;
 import org.marketcetera.core.notifications.Notification;
@@ -198,10 +197,9 @@ interface ServicesProvider
      *
      * @return a <code>List&lt;BrokerStatus&gt;</code> value
      * @throws ConnectionException if the information could not be retrieved
-     * @throws ClientInitException if the information could not be retrieved 
      */
     List<BrokerStatus> getBrokers()
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets the position in the given <code>Equity</code> at the given point in time.
      *
@@ -209,21 +207,19 @@ interface ServicesProvider
      * @param inEquity an <code>Equity</code> value
      * @return a <code>BigDecimal</code> value
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     BigDecimal getPositionAsOf(Date inDate,
                                Equity inEquity)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets all open <code>Equity</code> positions at the given point in time.
      *
      * @param inDate a <code>Date</code> value
      * @return a <code>Map&lt;PositionKey&lt;Equity&gt;,BigDecimal&gt;</code> value
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     Map<PositionKey<Equity>,BigDecimal> getAllPositionsAsOf(Date inDate)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets the position in the given <code>Option</code> at the given point in time.
      *
@@ -231,21 +227,19 @@ interface ServicesProvider
      * @param inOption an <code>Option</code> value
      * @return a <code>BigDecimal</code> value
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     BigDecimal getOptionPositionAsOf(Date inDate,
                                      Option inOption)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets all open <code>Option</code> positions at the given point in time.
      *
      * @param inDate a <code>Date</code> value
      * @return a <code>Map&lt;PositionKey&lt;Option&gt;,BigDecimal&gt;</code> value
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     Map<PositionKey<Option>,BigDecimal> getAllOptionPositionsAsOf(Date inDate)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets open positions for the options specified by the given option roots at the given point in time. 
      *
@@ -253,11 +247,10 @@ interface ServicesProvider
      * @param inOptionRoots a <code>String[]</code> value containing the specific option roots for which to search
      * @return a <code>Map&lt;PositionKey&lt;Option&gt;,BigDecimal&gt;</code> value
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     Map<PositionKey<Option>,BigDecimal> getOptionPositionsAsOf(Date inDate,
                                                                String...inOptionRoots)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets the underlying symbol for the given option root, if available.
      *
@@ -265,10 +258,9 @@ interface ServicesProvider
      * @return a <code>String</code> value containing the symbol for the underlying instrument or <code>null</code> if
      *  no underlying instrument could be found
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     String getUnderlying(String inOptionRoot)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets the set of of known option roots for the given underlying symbol. 
      *
@@ -276,10 +268,9 @@ interface ServicesProvider
      * @return a <code>Collection&lt;String&gt;</code> value sorted lexicographically by option root or <code>null</code>
      *  if no option roots could be found
      * @throws ConnectionException if the information could not be retrieved 
-     * @throws ClientInitException if the information could not be retrieved 
      */
     Collection<String> getOptionRoots(String inUnderlying)
-            throws ConnectionException, ClientInitException;
+            throws ConnectionException;
     /**
      * Gets the {@link ModuleURN} for this strategy.
      *

@@ -27,7 +27,6 @@ import org.marketcetera.event.TradeEvent;
 import org.marketcetera.marketdata.DateUtils;
 import org.marketcetera.marketdata.MarketDataFeedTestBase;
 import org.marketcetera.marketdata.MarketDataRequest;
-import org.marketcetera.marketdata.MarketDataRequestBuilder;
 import org.marketcetera.marketdata.MarketDataModuleTestBase.DataSink;
 import org.marketcetera.marketdata.bogus.BogusFeedModuleFactory;
 import org.marketcetera.module.*;
@@ -2157,11 +2156,6 @@ public abstract class LanguageTestBase
                            new Date(),
                            null);
         MockClient.getPositionFails = false;
-        getClientFails = true;
-        doPositionAsOfTest(validEquity.getSymbol(),
-                           new Date(),
-                           null);
-        getClientFails = false;
         // date in the past (before position begins)
         Interval<BigDecimal> openingBalance = position.getPositionView().get(0);
         doPositionAsOfTest(validEquity.getSymbol(),
@@ -3161,6 +3155,7 @@ public abstract class LanguageTestBase
     public void processedMarketDataRequests()
         throws Exception
     {
+        StrategyCoordinates strategy = getCombinedStrategy();
         for(int apiCounter=0;apiCounter<=1;apiCounter++) {
             boolean useStringAPI = (apiCounter == 1);
             AbstractRunningStrategy.getProperties().clear();
@@ -3168,6 +3163,12 @@ public abstract class LanguageTestBase
                 AbstractRunningStrategy.setProperty("useStringAPI",
                                                     "true");
             }
+            theStrategy = createStrategy(strategy.getName(),
+                                         getLanguage(),
+                                         strategy.getFile(),
+                                         null,
+                                         null,
+                                         null);
             // these are the nominal test values
             String symbols = "METC,ORCL,GOOG,YHOO";
             String marketDataSource = BogusFeedModuleFactory.IDENTIFIER;
@@ -3202,10 +3203,10 @@ public abstract class LanguageTestBase
                                                 null);
             executeProcessedMarketDataRequest(false,
                                               true);
-            // test empty market data source (uses "default" bogus source so returns data)
+            // test empty market data source
             AbstractRunningStrategy.setProperty("marketDataSource",
                                                 "");
-            executeProcessedMarketDataRequest(true,
+            executeProcessedMarketDataRequest(false,
                                               true);
             // done with negative market data source, replace the value
             AbstractRunningStrategy.setProperty("marketDataSource",
@@ -3248,13 +3249,6 @@ public abstract class LanguageTestBase
             // test cancellation of a combined request
             AbstractRunningStrategy.setProperty("cancelCep",
                                                 "true");
-            // start the strategy for this mini-test
-            theStrategy = createStrategy(getCombinedStrategy().getName(),
-                                         getLanguage(),
-                                         getCombinedStrategy().getFile(),
-                                         null,
-                                         null,
-                                         null);
             AbstractRunningStrategy runningStrategy = (AbstractRunningStrategy)getRunningStrategy(theStrategy).getRunningStrategy();
             runningStrategy.onCallback(this);
         }
@@ -3476,7 +3470,7 @@ public abstract class LanguageTestBase
         moduleManager.stop(strategyURN);
     }
     /**
-     * Tests the ability for a strategy to request and receive {@link org.marketcetera.marketdata.Content#MARKET_STAT} data.
+     * Tests the ability for a strategy to request and receive {@link org.marketcetera.marketdata.MarketDataRequest.Content#MARKET_STAT} data.
      *
      * @throws Exception if an error occurs
      */
@@ -3781,27 +3775,8 @@ public abstract class LanguageTestBase
                                                    boolean inCanConstructRequest)
         throws Exception
     {
-        theStrategy = createStrategy(getCombinedStrategy().getName(),
-                                     getLanguage(),
-                                     getCombinedStrategy().getFile(),
-                                     null,
-                                     null,
-                                     null);
         AbstractRunningStrategy strategy = (AbstractRunningStrategy)getRunningStrategy(theStrategy).getRunningStrategy();
         AbstractRunningStrategy.setProperty("finished",
-                                            null);
-        // reset any stored results from the previous test
-        Set<Object> keys = new HashSet<Object>(AbstractRunningStrategy.getProperties().keySet());
-        for(Object rawKey : keys) {
-            String key = (String)rawKey;
-            if(key.startsWith("ask") ||
-               key.startsWith("bid")) {
-                AbstractRunningStrategy.getProperties().remove(rawKey);
-            }
-        }
-        AbstractRunningStrategy.setProperty("bid",
-                                            null);
-        AbstractRunningStrategy.setProperty("ask",
                                             null);
         // start test
         strategy.onOther(this);
@@ -3826,15 +3801,14 @@ public abstract class LanguageTestBase
             });
         } else {
             if(inCanConstructRequest) {
-                assertEquals("0",
-                             requestIDString);
+                assertEquals(requestIDString,
+                             "0");
             } else {
                 assertNull(requestIDString);
             }
         }
         // check results
         doProcessedMarketDataRequestVerification(inSucceeds);
-        stopStrategy(theStrategy);
     }
     /**
      * Verify the result of a single processed market data request.
@@ -4349,7 +4323,7 @@ public abstract class LanguageTestBase
                 AbstractRunningStrategy.setProperty("localDataFlowStopped",
                                                     null);
                 // create a data flow (not created by the strategy)
-                MarketDataRequest inRequest = MarketDataRequestBuilder.newRequest().withProvider(BogusFeedModuleFactory.IDENTIFIER).withSymbols("METC").create();
+                MarketDataRequest inRequest = MarketDataRequest.newRequest().fromProvider(BogusFeedModuleFactory.IDENTIFIER).withSymbols("METC");
                 dataFlowID = moduleManager.createDataFlow(new DataRequest[] { new DataRequest(new ModuleURN(String.format("metc:mdata:%s",
                                                                                                                           inRequest.getProvider())),
                                                                                               inRequest)},

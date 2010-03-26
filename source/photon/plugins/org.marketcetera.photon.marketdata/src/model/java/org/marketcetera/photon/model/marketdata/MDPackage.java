@@ -11,7 +11,6 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 
-import org.marketcetera.marketdata.Content;
 import org.marketcetera.util.misc.ClassVersion;
 
 /**
@@ -390,7 +389,7 @@ public interface MDPackage extends EPackage {
      * The meta object id for the '<em>Depth Of Book Product</em>' data type.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see org.marketcetera.marketdata.Content
+     * @see org.marketcetera.marketdata.MarketDataRequest.Content
      * @see org.marketcetera.photon.model.marketdata.impl.MDPackageImpl#getDepthOfBookProduct()
      * @generated
      */
@@ -676,11 +675,11 @@ public interface MDPackage extends EPackage {
     EAttribute getMDQuote_Time();
 
     /**
-     * Returns the meta object for data type '{@link org.marketcetera.marketdata.Content <em>Depth Of Book Product</em>}'.
+     * Returns the meta object for data type '{@link org.marketcetera.marketdata.MarketDataRequest.Content <em>Depth Of Book Product</em>}'.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @return the meta object for data type '<em>Depth Of Book Product</em>'.
-     * @see org.marketcetera.marketdata.Content
+     * @see org.marketcetera.marketdata.MarketDataRequest.Content
      * @model instanceClass="org.marketcetera.marketdata.MarketDataRequest.Content"
      * @generated
      */
@@ -945,7 +944,7 @@ public interface MDPackage extends EPackage {
          * The meta object literal for the '<em>Depth Of Book Product</em>' data type.
          * <!-- begin-user-doc -->
          * <!-- end-user-doc -->
-         * @see org.marketcetera.marketdata.Content
+         * @see org.marketcetera.marketdata.MarketDataRequest.Content
          * @see org.marketcetera.photon.model.marketdata.impl.MDPackageImpl#getDepthOfBookProduct()
          * @generated
          */

@@ -1,7 +1,7 @@
 package org.marketcetera.photon.internal.marketdata;
 
-import org.marketcetera.marketdata.AssetClass;
-import org.marketcetera.marketdata.MarketDataRequestBuilder;
+import org.marketcetera.marketdata.MarketDataRequest;
+import org.marketcetera.marketdata.MarketDataRequest.AssetClass;
 import org.marketcetera.trade.Equity;
 import org.marketcetera.util.misc.ClassVersion;
 
@@ -25,8 +25,8 @@ public class EquityRequestAdapter extends InstrumentRequestAdapter<Equity> {
     }
 
     @Override
-    public MarketDataRequestBuilder initializeRequest(Equity instrument) {
-        return MarketDataRequestBuilder.newRequest().withAssetClass(AssetClass.EQUITY)
+    public MarketDataRequest initializeRequest(Equity instrument) {
+        return MarketDataRequest.newRequest().ofAssetClass(AssetClass.EQUITY)
                 .withSymbols(instrument.getSymbol());
     }
 }

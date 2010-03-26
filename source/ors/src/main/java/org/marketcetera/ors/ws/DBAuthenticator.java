@@ -1,8 +1,6 @@
 package org.marketcetera.ors.ws;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.marketcetera.client.ClientVersion;
-import org.marketcetera.client.IncompatibleComponentsException;
 import org.marketcetera.core.ApplicationVersion;
 import org.marketcetera.core.Util;
 import org.marketcetera.ors.security.SimpleUser;
@@ -10,11 +8,12 @@ import org.marketcetera.ors.security.SingleSimpleUserQuery;
 import org.marketcetera.persist.NoResultException;
 import org.marketcetera.persist.PersistenceException;
 import org.marketcetera.util.except.I18NException;
-import org.marketcetera.util.log.I18NBoundMessage2P;
 import org.marketcetera.util.log.I18NBoundMessage3P;
+import org.marketcetera.util.log.I18NBoundMessage2P;
 import org.marketcetera.util.misc.ClassVersion;
 import org.marketcetera.util.ws.stateful.Authenticator;
 import org.marketcetera.util.ws.stateless.StatelessClientContext;
+import org.marketcetera.client.ClientVersion;
 
 /**
  * A session authenticator that uses the database for authentication. 
@@ -73,22 +72,20 @@ public class DBAuthenticator
         (StatelessClientContext context,
          String user,
          char[] password)
-        throws IncompatibleComponentsException
+        throws I18NException
     {
         String serverVersion=ApplicationVersion.getVersion();
         String clientName=Util.getName(context.getAppId());
         String clientVersion=Util.getVersion(context.getAppId());
         if (!compatibleApp(clientName)) {
-            throw new IncompatibleComponentsException
+            throw new I18NException
                 (new I18NBoundMessage2P(Messages.APP_MISMATCH,
-                                        clientName,user),
-                 serverVersion);
+                                        clientName,user));
         }
         if (!compatibleVersions(clientVersion,serverVersion)) {
-            throw new IncompatibleComponentsException
+            throw new I18NException
                 (new I18NBoundMessage3P(Messages.VERSION_MISMATCH,
-                                        clientVersion,serverVersion,user),
-                 serverVersion);
+                                        clientVersion,serverVersion,user));
         }
         try {
             SimpleUser u=new SingleSimpleUserQuery(user).fetch();

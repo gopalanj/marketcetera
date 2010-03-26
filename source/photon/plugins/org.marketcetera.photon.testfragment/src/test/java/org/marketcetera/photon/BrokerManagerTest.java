@@ -2,6 +2,7 @@ package org.marketcetera.photon;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 
 import java.util.Arrays;
 
@@ -32,8 +33,8 @@ public class BrokerManagerTest {
                 status2, status3));
         fixture.setBrokersStatus(statuses);
         assertThat(fixture.getAvailableBrokers().size(), is(3));
-        assertBroker((Broker) fixture.getAvailableBrokers().get(0),
-                "Auto Select", null);
+        assertThat(fixture.getAvailableBrokers().get(0),
+                sameInstance((Object) BrokerManager.AUTO_SELECT_BROKER));
         assertBroker((Broker) fixture.getAvailableBrokers().get(1), status1);
         assertBroker((Broker) fixture.getAvailableBrokers().get(2), status3);
         status2 = new BrokerStatus("2", new BrokerID("2"), true);
@@ -41,18 +42,14 @@ public class BrokerManagerTest {
         statuses = new BrokersStatus(Arrays.asList(status1, status2, status3));
         fixture.setBrokersStatus(statuses);
         assertThat(fixture.getAvailableBrokers().size(), is(3));
-        assertBroker((Broker) fixture.getAvailableBrokers().get(0),
-                "Auto Select", null);
+        assertThat(fixture.getAvailableBrokers().get(0),
+                sameInstance((Object) BrokerManager.AUTO_SELECT_BROKER));
         assertBroker((Broker) fixture.getAvailableBrokers().get(1), status1);
         assertBroker((Broker) fixture.getAvailableBrokers().get(2), status2);
     }
 
     private void assertBroker(Broker broker, BrokerStatus status) {
-        assertBroker(broker, status.getName(), status.getId());
-    }
-
-    private void assertBroker(Broker broker, String name, BrokerID id) {
-        assertThat(broker.getName(), is(name));
-        assertThat(broker.getId(), is(id));
+        assertThat(broker.getName(), is(status.getName()));
+        assertThat(broker.getId(), is(status.getId()));
     }
 }

@@ -1,10 +1,8 @@
-package sample;
-
 import org.marketcetera.strategy.java.Strategy;
 import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
 import org.marketcetera.trade.*;
-import org.marketcetera.marketdata.MarketDataRequestBuilder;
+import org.marketcetera.marketdata.MarketDataRequest;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,9 +27,9 @@ public class OrderSender extends Strategy {
      */
     @Override
     public void onStart() {
-        mRequestID = requestMarketData(MarketDataRequestBuilder.newRequest().
+        mRequestID = requestMarketData(MarketDataRequest.newRequest().
                 withSymbols(SYMBOLS).
-                withProvider(MARKET_DATA_PROVIDER).create());
+                fromProvider(MARKET_DATA_PROVIDER));
         info("Issued Market Data Request " + mRequestID);
     }
 

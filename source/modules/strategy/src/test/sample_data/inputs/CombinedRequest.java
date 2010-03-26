@@ -4,7 +4,7 @@ import java.util.Map;
 import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
 import org.marketcetera.strategy.java.Strategy;
-import org.marketcetera.marketdata.MarketDataRequestBuilder;
+import org.marketcetera.marketdata.MarketDataRequest;
 
 /* $License$ */
 
@@ -128,16 +128,14 @@ public class CombinedRequest
         try {
             if(stringAPI != null) {
                 setProperty("requestID",
-                            Integer.toString(requestProcessedMarketData(MarketDataRequestBuilder.newRequest().withSymbols(symbols)
-                                                                                                             .withProvider(marketDataSource)
-                                                                                                             .withContent("TOP_OF_BOOK,LATEST_TICK").create().toString(),
+                            Integer.toString(requestProcessedMarketData(MarketDataRequest.newRequest().withSymbols(symbols).fromProvider(marketDataSource).
+                                                                          withContent("TOP_OF_BOOK,LATEST_TICK").toString(),
                                                                         statements,
                                                                         cepSource)));
             } else {
                 setProperty("requestID",
-                            Integer.toString(requestProcessedMarketData(MarketDataRequestBuilder.newRequest().withSymbols(symbols)
-                                                                                                             .withProvider(marketDataSource)
-                                                                                                             .withContent("TOP_OF_BOOK,LATEST_TICK").create(),
+                            Integer.toString(requestProcessedMarketData(MarketDataRequest.newRequest().withSymbols(symbols).fromProvider(marketDataSource).
+                                                                          withContent("TOP_OF_BOOK,LATEST_TICK"),
                                                                         statements,
                                                                         cepSource)));
             }

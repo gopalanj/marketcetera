@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundleName
 Bundle-SymbolicName: org.marketcetera.photon.module.ui;singleton:=true
-Bundle-Version: 2.1.0
+Bundle-Version: 2.0.0
 Bundle-Vendor: %bundleVendor
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -10,8 +10,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.eclipse.ui.views,
  org.eclipse.core.databinding,
- org.eclipse.jface.databinding,
- org.marketcetera.photon.commons
+ org.eclipse.jface.databinding
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.marketcetera.photon.module.ui

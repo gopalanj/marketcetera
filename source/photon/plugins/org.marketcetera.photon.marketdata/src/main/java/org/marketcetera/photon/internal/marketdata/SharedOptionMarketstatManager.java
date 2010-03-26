@@ -6,7 +6,10 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.marketcetera.event.MarketstatEvent;
-import org.marketcetera.marketdata.*;
+import org.marketcetera.marketdata.Capability;
+import org.marketcetera.marketdata.MarketDataRequest;
+import org.marketcetera.marketdata.MarketDataRequest.AssetClass;
+import org.marketcetera.marketdata.MarketDataRequest.Content;
 import org.marketcetera.module.ModuleManager;
 import org.marketcetera.photon.model.marketdata.impl.MDMarketstatImpl;
 import org.marketcetera.trade.Instrument;
@@ -96,10 +99,10 @@ public class SharedOptionMarketstatManager
     protected Subscriber createSubscriber(final SharedOptionMarketstatKey key) {
         assert key != null;
         final Instrument instrument = key.getInstrument();
-        final MarketDataRequest request = MarketDataRequestBuilder.newRequest()
-                .withAssetClass(AssetClass.OPTION).withUnderlyingSymbols(
+        final MarketDataRequest request = MarketDataRequest.newRequest()
+                .ofAssetClass(AssetClass.OPTION).withUnderlyingSymbols(
                         instrument.getSymbol())
-                .withContent(Content.MARKET_STAT).create();
+                .withContent(Content.MARKET_STAT);
         return new Subscriber() {
 
             @Override

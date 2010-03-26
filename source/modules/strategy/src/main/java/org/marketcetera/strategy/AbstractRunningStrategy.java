@@ -16,7 +16,6 @@ import org.marketcetera.core.position.PositionKey;
 import org.marketcetera.event.Event;
 import org.marketcetera.event.impl.LogEventBuilder;
 import org.marketcetera.marketdata.MarketDataRequest;
-import org.marketcetera.marketdata.MarketDataRequestBuilder;
 import org.marketcetera.module.DataFlowID;
 import org.marketcetera.module.DataFlowSupport;
 import org.marketcetera.module.DataRequest;
@@ -229,7 +228,7 @@ public abstract class AbstractRunningStrategy
     protected final int requestMarketData(String inRequest)
     {
         try {
-            MarketDataRequest request = MarketDataRequestBuilder.newRequestFromString(inRequest);
+            MarketDataRequest request = MarketDataRequest.newRequestFromString(inRequest);
             StrategyModule.log(LogEventBuilder.debug().withMessage(SUBMITTING_MARKET_DATA_REQUEST,
                                                                    String.valueOf(strategy),
                                                                    request).create(),
@@ -361,7 +360,7 @@ public abstract class AbstractRunningStrategy
                                                                    inCepSource,
                                                                    namespace).create(),
                                strategy);
-            return strategy.getServicesProvider().requestProcessedMarketData(MarketDataRequestBuilder.newRequestFromString(inRequest),
+            return strategy.getServicesProvider().requestProcessedMarketData(MarketDataRequest.newRequestFromString(inRequest),
                                                                              inStatements,
                                                                              inCepSource,
                                                                              namespace);

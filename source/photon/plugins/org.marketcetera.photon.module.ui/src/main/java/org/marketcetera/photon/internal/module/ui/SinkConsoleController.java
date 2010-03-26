@@ -10,7 +10,6 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import org.marketcetera.event.LogEvent;
 import org.marketcetera.event.LogEventLevel;
 import org.marketcetera.module.DataFlowID;
-import org.marketcetera.photon.module.IDataFlowLabelProvider;
 import org.marketcetera.photon.module.ISinkDataHandler;
 import org.marketcetera.photon.module.ISinkDataManager;
 import org.marketcetera.photon.module.ModuleSupport;
@@ -72,7 +71,7 @@ public class SinkConsoleController implements IConsoleFactory, IConsoleListener 
 	@Override
 	public final void openConsole() {
 		if (mConsole == null) {
-			mConsole = new MessageConsole(Messages.SINK_CONSOLE__NAME.getText(), null);
+			mConsole = new MessageConsole(Messages.SINK_CONSOLE_NAME.getText(), null);
 			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { mConsole });
 			mHandler = new InternalHandler(mConsole.newMessageStream());
 		}
@@ -91,23 +90,11 @@ public class SinkConsoleController implements IConsoleFactory, IConsoleListener 
 	 * @return a string representation of <code>inData</code> to write to the Sink Console, must not
 	 *         be null
 	 */
-	protected String format(final DataFlowID inFlowID, final Object inData) {
-        return Messages.SINK_CONSOLE_CONTROLLER_MESSAGE_FORMAT.getText(
-                getLabel(inFlowID), inData.toString());
+	protected String format(final Object inFlowID, final Object inData) {
+		return inFlowID.toString() + " " + inData.toString(); //$NON-NLS-1$
 	}
 
-	private String getLabel(DataFlowID dataFlowId) {
-        IDataFlowLabelProvider labelProvider = ModuleSupport.getDataFlowLabelProvider();
-        if (labelProvider != null) {
-            String label = labelProvider.getLabel(dataFlowId);
-            if (label != null) {
-                return label;
-            }
-        }
-        return dataFlowId.getValue();
-    }
-
-    /**
+	/**
 	 * This implementation of {@link IConsoleListener#consolesAdded(IConsole[])} does nothing.
 	 */
 	@Override

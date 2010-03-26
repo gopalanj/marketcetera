@@ -2,7 +2,7 @@ package org.marketcetera.ors.filters;
 
 import org.marketcetera.ors.info.RequestInfo;
 import quickfix.Message;
-import quickfix.field.SecurityDesc;
+import quickfix.field.ClearingFirm;
 
 /**
  * @author tlerios@marketcetera.com
@@ -15,13 +15,13 @@ import quickfix.field.SecurityDesc;
 public class SimpleMessageModifierManager
     extends MessageModifierManager
 {
-    public static final String SECURITY_DESC=
-        "SECURITY_DESC";
+    public static final String FIRM=
+        "FIRM";
 
     public void modifyMessage
         (RequestInfo info)
     {
         Message msg=(Message)info.getValue(RequestInfo.CURRENT_MESSAGE);
-        msg.setField(new SecurityDesc(SECURITY_DESC));
+        msg.setField(new ClearingFirm(FIRM));
     }
 }

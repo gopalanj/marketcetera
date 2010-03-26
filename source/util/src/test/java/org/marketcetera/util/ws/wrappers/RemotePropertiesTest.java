@@ -22,8 +22,6 @@ public class RemotePropertiesTest
         new String[] {"testTrace"};
     private static final String TEST_STRING=
         "testString";
-    private static final String TEST_CLASS=
-        "testClass";
 
 
     private void singleBase
@@ -33,7 +31,6 @@ public class RemotePropertiesTest
          boolean wrapperDeSerFailure,
          String serverMessage,
          String serverString,
-         String serverName,
          Throwable throwable,
          boolean proxyUsed)
     {
@@ -50,7 +47,6 @@ public class RemotePropertiesTest
         }
         assertEquals(serverMessage,p.getServerMessage());
         assertEquals(serverString,p.getServerString());
-        assertEquals(serverName,p.getServerName());
         if (serverString==null) {
             assertNull(p.getTraceCapture());
         } else {
@@ -74,7 +70,6 @@ public class RemotePropertiesTest
                    false,
                    server.getServerMessage(),
                    server.getServerString(),
-                   server.getServerName(),
                    server.getThrowable(),
                    true);
     }
@@ -89,7 +84,6 @@ public class RemotePropertiesTest
                    true,
                    server.getServerMessage(),
                    server.getServerString(),
-                   server.getServerName(),
                    server.getThrowable(),
                    true);
     }
@@ -99,16 +93,15 @@ public class RemotePropertiesTest
          SerWrapper<Throwable> wrapper,
          String serverMessage,
          String serverString,
-         String serverName,
          Throwable throwable)
         throws Exception
     {
         singleBase(server,wrapper,false,false,
-                   serverMessage,serverString,serverName,throwable,false);
+                   serverMessage,serverString,throwable,false);
         singleBase(assertRoundTripJAXB(server),wrapper,false,false,
-                   serverMessage,serverString,serverName,throwable,false);
+                   serverMessage,serverString,throwable,false);
         singleBase(assertRoundTripJava(server),wrapper,false,false,
-                   serverMessage,serverString,serverName,throwable,false);
+                   serverMessage,serverString,throwable,false);
     }
 
 
@@ -124,7 +117,6 @@ public class RemotePropertiesTest
                null,
                null,
                null,
-               null,
                null);
 
         assertEquality(new RemoteProperties(null),
@@ -132,7 +124,6 @@ public class RemotePropertiesTest
                        new RemoteProperties(TEST_THROWABLE),
                        new RemoteProperties(TEST_I18N_THROWABLE));
         single(new RemoteProperties(null),
-               null,
                null,
                null,
                null,
@@ -149,7 +140,6 @@ public class RemotePropertiesTest
                TEST_THROWABLE.getLocalizedMessage(),
                TestThrowable.class.getName()+": "+
                TEST_MESSAGE,
-               TestThrowable.class.getName(),
                TEST_THROWABLE);
 
         assertEquality(new RemoteProperties(TEST_I18N_THROWABLE),
@@ -162,7 +152,6 @@ public class RemotePropertiesTest
                TEST_I18N_THROWABLE.getLocalizedDetail(),
                I18NException.class.getName()+": "+
                TEST_I18N_THROWABLE.getLocalizedMessage(),
-               I18NException.class.getName(),
                TEST_I18N_THROWABLE);
     }
 
@@ -184,9 +173,6 @@ public class RemotePropertiesTest
         p.setServerString(TEST_STRING);
         assertEquals(TEST_STRING,p.getServerString());
 
-        p.setServerName(TEST_CLASS);
-        assertEquals(TEST_CLASS,p.getServerName());
-
         p.setWrapper(null);
         assertNull(p.getWrapper());
 
@@ -198,9 +184,6 @@ public class RemotePropertiesTest
 
         p.setServerString(null);
         assertNull(p.getServerString());
-
-        p.setServerName(null);
-        assertNull(p.getServerName());
     }
 
     @Test
@@ -222,7 +205,6 @@ public class RemotePropertiesTest
              false,
              TEST_NONSER_THROWABLE.getLocalizedMessage(),
              TestUnserializableThrowable.class.getName()+": "+TEST_MESSAGE,
-             TestUnserializableThrowable.class.getName(),
              TEST_NONSER_THROWABLE,
              false);
 
@@ -249,7 +231,6 @@ public class RemotePropertiesTest
                    TEST_NONDESER_THROWABLE.getLocalizedDetail(),
                    I18NException.class.getName()+": "+
                    TEST_NONDESER_THROWABLE.getLocalizedMessage(),
-                   I18NException.class.getName(),
                    TEST_NONDESER_THROWABLE,
                    false);
 

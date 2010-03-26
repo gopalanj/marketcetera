@@ -126,12 +126,11 @@ public class MarketstatEventCacheTest
                     event);
         // test values that are always different
         Thread.sleep(250);
-        event = inBuilder.withSource(this).create();
+        inBuilder.withSource(this);
         inCache.cache(event);
         verifyCache(inCache,
                     event);
-        event = inBuilder.withSource(null).create();
-        inCache.cache(event);
+        inCache.cache(inBuilder.withSource(null).create());
         verifyCache(inCache,
                     event);
         // start changing values that may or may not change
