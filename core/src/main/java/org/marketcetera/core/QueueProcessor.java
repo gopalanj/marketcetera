@@ -9,6 +9,8 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.marketcetera.util.misc.ClassVersion;
 import org.springframework.context.Lifecycle;
 
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
+
 /* $License$ */
 
 /**
@@ -105,7 +107,7 @@ public abstract class QueueProcessor<Clazz>
                                                      threadDescriptor);
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | HazelcastInstanceNotActiveException e) {
             interrupted.set(true);
             Messages.INTERRUPTED.info(this,
                                       threadDescriptor);
@@ -194,7 +196,7 @@ public abstract class QueueProcessor<Clazz>
      */
     protected QueueProcessor()
     {
-        this("Unknown Queue Processor");
+        this(null);
     }
     /**
      * Create a new QueueProcessor instance.
@@ -203,10 +205,22 @@ public abstract class QueueProcessor<Clazz>
      */
     protected QueueProcessor(String inThreadDescriptor)
     {
+        this(inThreadDescriptor,
+             new LinkedBlockingDeque<Clazz>());
+    }
+    /**
+     * Create a new QueueProcessor instance.
+     *
+     * @param inThreadDescriptor a <code>String</code> value describing the processor
+     * @param inQueue a <code>BlockingQueue&lt;Clazz&gt;</code> value
+     */
+    protected QueueProcessor(String inThreadDescriptor,
+                             BlockingQueue<Clazz> inQueue)
+    {
         if(inThreadDescriptor == null) {
-            throw new NullPointerException();
+            inThreadDescriptor = "Unknown Queue Processor";
         }
-        queue = new LinkedBlockingDeque<Clazz>();
+        queue = inQueue;
         threadDescriptor = inThreadDescriptor;
     }
     /**

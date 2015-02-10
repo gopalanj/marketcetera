@@ -8,6 +8,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.marketcetera.algo.BrokerAlgoSpec;
 import org.marketcetera.trade.BrokerID;
 import org.marketcetera.util.misc.ClassVersion;
@@ -163,6 +165,29 @@ public class BrokerStatus
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder().append(brokerId).toHashCode();
+    }
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof BrokerStatus)) {
+            return false;
+        }
+        BrokerStatus other = (BrokerStatus) obj;
+        return new EqualsBuilder().append(brokerId,other.brokerId).isEquals();
+    }
     @Override
     public String toString()
     {
