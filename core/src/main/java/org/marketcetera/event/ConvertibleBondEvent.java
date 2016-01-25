@@ -2,6 +2,7 @@ package org.marketcetera.event;
 
 import java.math.BigDecimal;
 
+import org.marketcetera.event.beans.HasConvertibleBond;
 import org.marketcetera.trade.Equity;
 import org.marketcetera.util.misc.ClassVersion;
 

@@ -19,6 +19,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
 
 /* $License$ */
 
@@ -144,7 +145,7 @@ public abstract class QueueProcessor<Clazz>
                                                      threadDescriptor);
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | HazelcastInstanceNotActiveException e) {
             interrupted.set(true);
             Messages.INTERRUPTED.info(this,
                                       threadDescriptor);
@@ -183,6 +184,15 @@ public abstract class QueueProcessor<Clazz>
         addToQueueMetric.mark(size);
         queueCounterMetric.inc(size);
         queue.addAll(inData);
+    }
+    /**
+     * Gets the queue size.
+     *
+     * @return an <code>int</code> value
+     */
+    protected int size()
+    {
+        return new Long(queueCounterMetric.getCount()).intValue();
     }
     /**
      * Gets the queue to process.
@@ -258,7 +268,7 @@ public abstract class QueueProcessor<Clazz>
      */
     protected QueueProcessor()
     {
-        this("Unknown Queue Processor");
+        this(null);
     }
     /**
      * Create a new QueueProcessor instance.
@@ -267,10 +277,22 @@ public abstract class QueueProcessor<Clazz>
      */
     protected QueueProcessor(String inThreadDescriptor)
     {
+        this(inThreadDescriptor,
+             new LinkedBlockingDeque<Clazz>());
+    }
+    /**
+     * Create a new QueueProcessor instance.
+     *
+     * @param inThreadDescriptor a <code>String</code> value describing the processor
+     * @param inQueue a <code>BlockingQueue&lt;Clazz&gt;</code> value
+     */
+    protected QueueProcessor(String inThreadDescriptor,
+                             BlockingQueue<Clazz> inQueue)
+    {
         if(inThreadDescriptor == null) {
-            throw new NullPointerException();
+            inThreadDescriptor = "Unknown Queue Processor";
         }
-        queue = new LinkedBlockingDeque<Clazz>();
+        queue = inQueue;
         threadDescriptor = inThreadDescriptor;
         metrics = MetricService.getInstance().getMetrics();
     }

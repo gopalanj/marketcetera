@@ -2072,7 +2072,7 @@ public class SimulatedExchangeTest
     {
         List<BidEvent> actualBids = new ArrayList<BidEvent>();
         List<AskEvent> actualAsks = new ArrayList<AskEvent>();
-        for(QuoteEvent event : inActualDepthOfBook) {
+        for(Event event : inActualDepthOfBook) {
             if(event instanceof BidEvent) {
                 actualBids.add((BidEvent)event);
             } else if(event instanceof AskEvent)  {

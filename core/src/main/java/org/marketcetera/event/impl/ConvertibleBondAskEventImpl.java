@@ -304,4 +304,5 @@ public class ConvertibleBondAskEventImpl
     @XmlElement
     private final ConvertibleBondBean bond;
     private static final long serialVersionUID = 1L;
+
 }

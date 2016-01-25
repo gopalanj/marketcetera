@@ -1,4 +1,4 @@
-package org.marketcetera.event;
+package org.marketcetera.event.beans;
 
 import org.marketcetera.event.HasInstrument;
 import org.marketcetera.trade.ConvertibleBond;
@@ -22,4 +22,4 @@ public interface HasConvertibleBond
      */
     @Override
     public ConvertibleBond getInstrument();
-}
+	}
