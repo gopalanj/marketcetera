@@ -18,7 +18,7 @@
   <parent>
       <groupId>org.marketcetera</groupId>
       <artifactId>public-parent</artifactId>
-      <version>2.4.3</version>
+      <version>3.0.11</version>
   </parent>
   <artifactId>util</artifactId>
   <packaging>jar</packaging>
@@ -29,7 +29,7 @@
 
     <!-- Compile. -->
     <dependency>
-      <groupId>quickfixj</groupId>
+      <groupId>org.quickfixj</groupId>
       <artifactId>quickfixj-all</artifactId>
     </dependency>
     <dependency>
