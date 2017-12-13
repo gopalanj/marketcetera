@@ -1,7 +1,9 @@
 package org.marketcetera.module;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.marketcetera.util.log.SLF4JLoggerProxy;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /* $License$ */
 
@@ -20,12 +22,18 @@ public abstract class AbstractDataReemitterModule
      * @see org.marketcetera.module.DataReceiver#receiveData(org.marketcetera.module.DataFlowID, java.lang.Object)
      */
     @Override
-    public void receiveData(DataFlowID inFlowID,
+    public void receiveData(DataFlowID inFlowId,
                             Object inData)
             throws ReceiveDataException
     {
-        DataEmitterSupport dataEmitterSupport = dataSupport.get(inFlowID);
-        if(dataEmitterSupport != null) {
+        DataEmitterSupport dataEmitterSupport = dataSupport.getIfPresent(inFlowId);
+        SLF4JLoggerProxy.trace(this,
+                               "Received {} for {}",
+                               inData,
+                               inFlowId);
+        inData = onReceiveData(inData,
+                               dataEmitterSupport);
+        if(dataEmitterSupport != null && inData != null) {
             dataEmitterSupport.send(inData);
         }
     }
@@ -37,6 +45,10 @@ public abstract class AbstractDataReemitterModule
                             DataEmitterSupport inSupport)
             throws RequestDataException
     {
+        SLF4JLoggerProxy.debug(this,
+                               "Received request {} for {}",
+                               inRequest,
+                               inSupport);
         dataSupport.put(inSupport.getFlowID(),
                         inSupport);
     }
@@ -47,7 +59,19 @@ public abstract class AbstractDataReemitterModule
     public void cancel(DataFlowID inFlowID,
                        RequestID inRequestID)
     {
-        dataSupport.remove(inFlowID);
+        dataSupport.invalidate(inFlowID);
+    }
+    /**
+     * Invoked when data is received as part of a data flow.
+     *
+     * @param inData an <code>Object</code> value
+     * @param inDataSupport a <code>DataEmitterSupport</code> value
+     * @return an <code>Object</code> value to re-emit
+     */
+    protected Object onReceiveData(Object inData,
+                                   DataEmitterSupport inDataSupport)
+    {
+        return inData;
     }
     /**
      * Create a new AbstractDataReemitterModule instance.
@@ -68,7 +92,7 @@ public abstract class AbstractDataReemitterModule
     protected void preStart()
             throws ModuleException
     {
-        dataSupport.clear();
+        dataSupport.invalidateAll();
     }
     /* (non-Javadoc)
      * @see org.marketcetera.module.Module#preStop()
@@ -79,7 +103,16 @@ public abstract class AbstractDataReemitterModule
     {
     }
     /**
+     * Get the data support cache.
+     *
+     * @return a <code>Cache&lt;DataFlowID,DataEmitterSupport&gt;</code> value
+     */
+    protected Cache<DataFlowID,DataEmitterSupport> getDataSupport()
+    {
+        return dataSupport;
+    }
+    /**
      * if wired into a multi-module flow, this object will assist in passing data to the next object in the flow
      */
-    private final Map<DataFlowID,DataEmitterSupport> dataSupport = new HashMap<>();
+    private final Cache<DataFlowID,DataEmitterSupport> dataSupport = CacheBuilder.newBuilder().build();
 }

@@ -1,4 +1,5 @@
 #Module factories for testing.
+org.marketcetera.module.SinkModuleFactory
 org.marketcetera.module.SingleModuleFactory
 org.marketcetera.module.MultipleModuleFactory
 org.marketcetera.module.ComplexModuleFactory
@@ -11,4 +12,4 @@ org.marketcetera.module.SingleParmModuleFactory
 org.marketcetera.module.CopierModuleFactory
 org.marketcetera.module.ConcurrentTestFactory
 org.marketcetera.module.DynamicBeanModuleFactory
-org.marketcetera.marketdata.MockMarketDataFeedModuleFactory
+org.marketcetera.persist.TransactionModuleFactory
