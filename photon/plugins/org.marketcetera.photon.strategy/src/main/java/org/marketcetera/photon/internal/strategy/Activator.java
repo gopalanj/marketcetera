@@ -32,10 +32,7 @@ public final class Activator implements BundleActivator {
      * The {@link TradeSuggestionManager}, confined to the UI thread.
      */
     private TradeSuggestionManager mTradeSuggestionManager;
-    /**
-     * monitors strategy engines
-     */
-    private StrategyEngineMonitor strategyEngineMonitor;
+
     /**
      * The bundle's context, used for service registration.
      */
@@ -49,16 +46,13 @@ public final class Activator implements BundleActivator {
     private AbstractStrategyEnginesSupport mSupport;
 
     @Override
-    public void start(BundleContext inContext)
-            throws Exception
-    {
+    public void start(BundleContext context) throws Exception {
         synchronized (Activator.class) {
-            mBundleContext = inContext;
+            mBundleContext = context;
             sInstance = this;
         }
-        strategyEngineMonitor = new StrategyEngineMonitor(inContext);
-        strategyEngineMonitor.start();
     }
+
     @Override
     public void stop(BundleContext context) throws Exception {
         synchronized (Activator.class) {
@@ -96,7 +90,7 @@ public final class Activator implements BundleActivator {
         SWTUtils.checkThread();
         synchronized (Activator.class) {
             if (mTradeSuggestionManager == null) {
-                mTradeSuggestionManager = new TradeSuggestionManager(strategyEngineMonitor);
+                mTradeSuggestionManager = new TradeSuggestionManager();
             }
             return mTradeSuggestionManager;
         }

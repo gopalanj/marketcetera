@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -142,7 +141,6 @@ public class SAClientWSTest extends SAClientTestBase {
         File f = File.createTempFile("strat", ".tst");
         f.deleteOnExit();
         CopyCharsUtils.copy("Test Strategy Contents".toCharArray(), f.getAbsolutePath());
-        int fileLength = FileUtils.readFileToString(f).length();
         final CreateStrategyParameters input = new CreateStrategyParameters(
                 "instance", "strategy", "java", f, "key=value", false);
         final ModuleURN output = new ModuleURN("test:prov:me:A");
@@ -175,7 +173,9 @@ public class SAClientWSTest extends SAClientTestBase {
         getClient().createStrategy(parms);
         InputStream file = getMockSAService().getCreateStrategyParameters().getStrategySource();
         assertNotNull(file);
-        assertEquals(fileLength, IOUtils.toByteArray(file).length);
+        //If the file doesn't exist at the time it's being sent, it comes out
+        //as empty at the other end.
+        assertEquals(0, IOUtils.toByteArray(file).length);
     }
 
     @Test
@@ -184,7 +184,6 @@ public class SAClientWSTest extends SAClientTestBase {
         File f = File.createTempFile("strat", ".tst");
         f.deleteOnExit();
         CopyCharsUtils.copy("Test Strategy Contents".toCharArray(), f.getAbsolutePath());
-        int fileLength = FileUtils.readFileToString(f).length();
         final CreateStrategyParameters output = new CreateStrategyParameters(
                 "instance", "strategy", "java", f, "key=value", false);
         testAPI(new WSTester<CreateStrategyParameters>() {
@@ -210,7 +209,9 @@ public class SAClientWSTest extends SAClientTestBase {
         assertFalse(f.exists());
         InputStream file = getClient().getStrategyCreateParms(null).getStrategySource();
         assertNotNull(file);
-        assertEquals(fileLength, IOUtils.toByteArray(file).length);
+        //If the file doesn't exist at the time it's being sent, it comes out
+        //as empty at the other end.
+        assertEquals(0, IOUtils.toByteArray(file).length);
     }
 
     @Test
