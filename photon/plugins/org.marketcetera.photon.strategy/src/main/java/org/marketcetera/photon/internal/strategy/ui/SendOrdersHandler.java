@@ -46,7 +46,8 @@ public class SendOrdersHandler extends AbstractHandler {
 				OrderSingle order = suggestion.getOrder();
 				try {
 					client.sendOrder(order);
-					TradeSuggestionManager.getCurrent().suggestionSent(suggestion);
+					TradeSuggestionManager.getCurrent().removeSuggestion(
+							suggestion);
 				} catch (Exception e) {
 					Messages.SEND_ORDERS_HANDLER_SEND_ORDER_FAILURE.error(this, order.toString());
 					status.add(new Status(IStatus.ERROR, StrategyUI.PLUGIN_ID,

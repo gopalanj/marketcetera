@@ -124,14 +124,17 @@ public class CreateStrategyParametersTest {
         InputStream is = csp.getStrategySource();
         assertEquals(strategyContents, IOUtils.toString(is));
         is.close();
-        // verify no failure when a non existent file is supplied
+        //verify failure when a non existent file is supplied
         final CreateStrategyParameters csp2 = new CreateStrategyParameters(
                 null, "mname", "JAVA", tmp, null, true);
         assertTrue(tmp.delete());
         assertFalse(tmp.exists());
-        is = csp2.getStrategySource();
-        assertEquals(strategyContents, IOUtils.toString(is));
-        is.close();
+        new ExpectedFailure<FileNotFoundException>(){
+            @Override
+            protected void run() throws Exception {
+                csp2.getStrategySource();
+            }
+        };
     }
 
     /**
